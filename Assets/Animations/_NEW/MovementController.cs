@@ -10,8 +10,9 @@ public class MovementController : MonoBehaviour
     private PlayerInput playerInput;
     private CharacterController characterController;
     private Animator animator;
-    
+
     [Header("Gameplay")] 
+    [SerializeField] private bool isDead = false;
     [SerializeField] private float maxHealth = 100f;
     [SerializeField, Range(0, 100)] private float currentHealth;
 
@@ -171,6 +172,8 @@ public class MovementController : MonoBehaviour
         
         GravityHandler();
         Jump();
+
+        if (isDead) animator.enabled = false;
     }
 
     private void AimDownSights()
