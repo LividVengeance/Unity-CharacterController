@@ -1,3 +1,4 @@
+/*
 // GENERATED AUTOMATICALLY FROM 'Assets/Animations/_NEW/PlayerInput.inputactions'
 
 using System;
@@ -378,3 +379,4 @@ public class @PlayerInput : IInputActionCollection, IDisposable
         void OnJump(InputAction.CallbackContext context);
     }
 }
+*/
