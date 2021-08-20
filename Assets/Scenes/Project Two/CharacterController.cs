@@ -10,6 +10,8 @@ public struct PlayerCharacterInputs
     public float MoveAxisRight;
     public Quaternion CameraRotation;
     public bool JumpDown;
+    public bool CrouchDown;
+    public bool CrouchUp;
 }
 
 public class CharacterController : MonoBehaviour, ICharacterController
@@ -62,6 +64,10 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private Vector3 wallJumpNormal;
     // Velocity to be added on next update 
     private Vector3 internalVelocityAdd = Vector3.zero;
+    // Crouching vars
+    private bool shouldBeCrouching = false;
+    private bool isCrouching = false;
+    private Collider[] probedColliders = new Collider[8];
     
 
     /// Start is called before the first frame update
@@ -101,6 +107,20 @@ public class CharacterController : MonoBehaviour, ICharacterController
             timeSinceJumpRequested = 0f;
             jumpRequested = true;
         }
+        
+        // Crouching input
+        if (inputs.CrouchDown)
+        {
+            shouldBeCrouching = true;
+
+            if (!isCrouching)
+            {
+                isCrouching = true;
+                characterMotor.SetCapsuleDimensions(0.5f, 1f, 0.5f);
+                meshRoot.localScale = new Vector3(1f, 0.5f, 1f);
+            }
+        }
+        else if (inputs.CrouchUp) shouldBeCrouching = false;
     }
 
     /// This is where you tell your character what its rotation should be right now. 
@@ -194,7 +214,7 @@ public class CharacterController : MonoBehaviour, ICharacterController
             if (canWallJump || !jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround : 
                 characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
             {
-                // Calculate jump direction before ungrounding
+                // Calculate jump direction before un-grounding
                 Vector3 jumpDirection = characterMotor.CharacterUp;
                 
                 // Wall jumping direction
@@ -263,6 +283,27 @@ public class CharacterController : MonoBehaviour, ICharacterController
         }
         // Keep track of time since we were last able to jump (for grace period)
         else timeSinceLastAbleToJump += deltaTime;
+        
+        // Handle uncrouching
+        if (isCrouching && !shouldBeCrouching)
+        {
+            // Do an overlap test with the character's standing height to see if there are any obstructions
+            characterMotor.SetCapsuleDimensions(0.5f, 2f, 1f);
+            if (characterMotor.CharacterCollisionsOverlap(
+                characterMotor.TransientPosition,
+                characterMotor.TransientRotation,
+                probedColliders) > 0)
+            {
+                // If obstructions, just stick to crouching dimensions
+                characterMotor.SetCapsuleDimensions(0.5f, 1f, 0.5f);
+            }
+            else
+            {
+                // If no obstructions, uncrouch
+                meshRoot.localScale = new Vector3(1f, 1f, 1f);
+                isCrouching = false;
+            }
+        }
     }
 
     public bool IsColliderValidForCollisions(Collider coll)
