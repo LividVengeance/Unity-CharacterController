@@ -47,6 +47,7 @@ public class InputHandler : MonoBehaviour
         characterInputs.MoveAxisForward = Input.GetAxisRaw("Vertical");
         characterInputs.MoveAxisRight = Input.GetAxisRaw("Horizontal");
         characterInputs.CameraRotation = OrbitCamera.Transform.rotation;
+        characterInputs.JumpDown = Input.GetKeyDown(KeyCode.Space);
 
         // Apply inputs to character
         character.SetInputs(ref characterInputs);

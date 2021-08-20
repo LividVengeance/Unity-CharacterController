@@ -9,6 +9,7 @@ public struct PlayerCharacterInputs
     public float MoveAxisForward;
     public float MoveAxisRight;
     public Quaternion CameraRotation;
+    public bool JumpDown;
 }
 
 public class CharacterController : MonoBehaviour, ICharacterController
@@ -24,6 +25,15 @@ public class CharacterController : MonoBehaviour, ICharacterController
     public float maxAirMoveSpeed = 10f;
     public float airAccelerationSpeed = 5f;
     public float drag = 0.1f;
+    
+    [Header("Jumping")]
+    public bool allowJumpingWhenSliding = false;
+    public bool allowDoubleJump = false;
+    public float jumpSpeed = 10f;
+    [Tooltip("Time before landing where jump input will still allow jump once you land.")] 
+    public float jumpPreGroundingGraceTime = 0f;
+    [Tooltip("Time after leaving stable ground where jump will still be allowed")]
+    public float jumpPostGroundingGraceTime = 0f;
 
     [Header("Misc")]
     public bool rotationObstruction;
@@ -34,17 +44,25 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private Vector3 moveInputVector;
     private Vector3 lookInputVector;
     
+    // Jump vars
+    private bool jumpRequested = false;
+    private bool jumpConsumed = false;
+    private bool jumpedThisFrame = false;
+    private float timeSinceJumpRequested = Mathf.Infinity;
+    private float timeSinceLastAbleToJump = 0f;
+    private bool doubleJumpConsumed = false;
+    
     // Will have the character face camera look direction
     private bool rotateToCameraFacing = true;
 
-    // Start is called before the first frame update
+    /// Start is called before the first frame update
     void Start()
     {
         // Assigns as the motors controller
         characterMotor.CharacterController = this;
     }
 
-    // Update is called once per frame
+    /// Update is called once per frame
     void Update()
     {
         
@@ -67,6 +85,13 @@ public class CharacterController : MonoBehaviour, ICharacterController
         // Move and look inputs
         moveInputVector = cameraPlanarRotation * _moveInputVector;
         lookInputVector = cameraPlanarDirection;
+        
+        // Jumping input
+        if (inputs.JumpDown)
+        {
+            timeSinceJumpRequested = 0f;
+            jumpRequested = true;
+        }
     }
 
     /// This is where you tell your character what its rotation should be right now. 
@@ -134,6 +159,49 @@ public class CharacterController : MonoBehaviour, ICharacterController
             // Drag
             currentVelocity *= (1f / (1f + (drag * deltaTime)));
         }
+        
+        // Handle jumping
+        jumpedThisFrame = false;
+        timeSinceJumpRequested += deltaTime;
+        if (jumpRequested)
+        {
+            // Handle double jump
+            if (allowDoubleJump)
+            {
+                if (jumpConsumed && !doubleJumpConsumed && (allowJumpingWhenSliding ? 
+                    !characterMotor.GroundingStatus.FoundAnyGround : !characterMotor.GroundingStatus.IsStableOnGround))
+                {
+                    characterMotor.ForceUnground(0.1f);
+
+                    // Add to the return velocity and reset jump state
+                    currentVelocity += (characterMotor.CharacterUp * jumpSpeed) - Vector3.Project(currentVelocity, characterMotor.CharacterUp);
+                    jumpRequested = false;
+                    doubleJumpConsumed = true;
+                    jumpedThisFrame = true;
+                }
+            }
+            
+            // See if we actually are allowed to jump
+            if (!jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround : 
+                characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
+            {
+                // Calculate jump direction before un-grounding
+                Vector3 jumpDirection = characterMotor.CharacterUp;
+                if (characterMotor.GroundingStatus.FoundAnyGround && !characterMotor.GroundingStatus.IsStableOnGround)
+                {
+                    jumpDirection = characterMotor.GroundingStatus.GroundNormal;
+                }
+
+                // Makes the character skip ground probing/snapping on its next update. 
+                characterMotor.ForceUnground(0.1f);
+
+                // Add to the return velocity and reset jump state
+                currentVelocity += (jumpDirection * jumpSpeed) - Vector3.Project(currentVelocity, characterMotor.CharacterUp);
+                jumpRequested = false;
+                jumpConsumed = true;
+                jumpedThisFrame = true;
+            }
+        }
     }
 
     public void BeforeCharacterUpdate(float deltaTime)
@@ -144,8 +212,25 @@ public class CharacterController : MonoBehaviour, ICharacterController
     {
     }
 
+    /// This is called after the character has finished its movement update
     public void AfterCharacterUpdate(float deltaTime)
     {
+        // Handle jumping pre-ground grace period
+        if (jumpRequested && timeSinceJumpRequested > jumpPreGroundingGraceTime) jumpRequested = false;
+
+        // Handle jumping while sliding
+        if (allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround : characterMotor.GroundingStatus.IsStableOnGround)
+        {
+            // If we're on a ground surface, reset jumping values
+            if (!jumpedThisFrame)
+            {
+                doubleJumpConsumed = false;
+                jumpConsumed = false;
+            }
+            timeSinceLastAbleToJump = 0f;
+        }
+        // Keep track of time since we were last able to jump (for grace period)
+        else timeSinceLastAbleToJump += deltaTime;
     }
 
     public bool IsColliderValidForCollisions(Collider coll)
