@@ -17,28 +17,33 @@ public class CharacterController : MonoBehaviour, ICharacterController
     public KinematicCharacterMotor characterMotor;
     
     [Header("Stable Movement")]
-    public float maxStableMoveSpeed = 10f;
-    public float stableMovementSharpness = 15;
-    public float orientationSharpness = 10;
+    [SerializeField] private float maxStableMoveSpeed = 10f;
+    [SerializeField] private float stableMovementSharpness = 15;
+    [SerializeField] private float orientationSharpness = 10;
 
     [Header("Air Movement")]
-    public float maxAirMoveSpeed = 10f;
-    public float airAccelerationSpeed = 5f;
-    public float drag = 0.1f;
+    [SerializeField] private float maxAirMoveSpeed = 10f;
+    [SerializeField] private float airAccelerationSpeed = 5f;
+    [SerializeField] private float drag = 0.1f;
     
     [Header("Jumping")]
-    public bool allowJumpingWhenSliding = false;
-    public bool allowDoubleJump = false;
-    public float jumpSpeed = 10f;
-    [Tooltip("Time before landing where jump input will still allow jump once you land.")] 
-    public float jumpPreGroundingGraceTime = 0f;
-    [Tooltip("Time after leaving stable ground where jump will still be allowed")]
-    public float jumpPostGroundingGraceTime = 0f;
+    [SerializeField] private bool allowJumpingWhenSliding = false;
+    [SerializeField] private bool allowDoubleJump = false;
+    [SerializeField] private bool allowWallJump = false;
+    [SerializeField] private float jumpSpeed = 10f;
+    [SerializeField, Tooltip("Time before landing where jump input will still allow jump once you land")] 
+    private float jumpPreGroundingGraceTime = 0f;
+    [SerializeField, Tooltip("Time after leaving stable ground where jump will still be allowed")]
+    private float jumpPostGroundingGraceTime = 0f;
 
     [Header("Misc")]
-    public bool rotationObstruction;
-    public Vector3 gravity = new Vector3(0, -30f, 0);
-    public Transform meshRoot;
+    [SerializeField] private bool rotationObstruction;
+    [SerializeField] private Vector3 gravity = new Vector3(0, -30f, 0);
+    [SerializeField] private Transform meshRoot;
+    
+    [Header("Camera")]
+    [SerializeField, Tooltip("Will have the character face camera look direction")] 
+    private bool rotateToCameraFacing = true;
     
     // Input vectors
     private Vector3 moveInputVector;
@@ -50,10 +55,14 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private bool jumpedThisFrame = false;
     private float timeSinceJumpRequested = Mathf.Infinity;
     private float timeSinceLastAbleToJump = 0f;
+    // Double jump vars
     private bool doubleJumpConsumed = false;
+    // Wall jump vars
+    private bool canWallJump = false;
+    private Vector3 wallJumpNormal;
+    // Velocity to be added on next update 
+    private Vector3 internalVelocityAdd = Vector3.zero;
     
-    // Will have the character face camera look direction
-    private bool rotateToCameraFacing = true;
 
     /// Start is called before the first frame update
     void Start()
@@ -182,12 +191,16 @@ public class CharacterController : MonoBehaviour, ICharacterController
             }
             
             // See if we actually are allowed to jump
-            if (!jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround : 
+            if (canWallJump || !jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround : 
                 characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
             {
-                // Calculate jump direction before un-grounding
+                // Calculate jump direction before ungrounding
                 Vector3 jumpDirection = characterMotor.CharacterUp;
-                if (characterMotor.GroundingStatus.FoundAnyGround && !characterMotor.GroundingStatus.IsStableOnGround)
+                
+                // Wall jumping direction
+                if (canWallJump) jumpDirection = wallJumpNormal;
+                // Normal/double jumping direction
+                else if (characterMotor.GroundingStatus.FoundAnyGround && !characterMotor.GroundingStatus.IsStableOnGround)
                 {
                     jumpDirection = characterMotor.GroundingStatus.GroundNormal;
                 }
@@ -201,6 +214,16 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 jumpConsumed = true;
                 jumpedThisFrame = true;
             }
+            
+            // Reset wall jump
+            canWallJump = false;
+        }
+        
+        // Take into account additive velocity
+        if (internalVelocityAdd.sqrMagnitude > 0f)
+        {
+            currentVelocity += internalVelocityAdd;
+            internalVelocityAdd = Vector3.zero;
         }
     }
 
@@ -210,6 +233,15 @@ public class CharacterController : MonoBehaviour, ICharacterController
 
     public void PostGroundingUpdate(float deltaTime)
     {
+        // Handle landing and leaving ground
+        if (characterMotor.GroundingStatus.IsStableOnGround && !characterMotor.LastGroundingStatus.IsStableOnGround)
+        {
+            OnLanded();
+        }
+        else if (!characterMotor.GroundingStatus.IsStableOnGround && characterMotor.LastGroundingStatus.IsStableOnGround)
+        {
+            OnLeaveStableGround();
+        }
     }
 
     /// This is called after the character has finished its movement update
@@ -245,6 +277,12 @@ public class CharacterController : MonoBehaviour, ICharacterController
     public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint,
         ref HitStabilityReport hitStabilityReport)
     {
+        // We can wall jump only if we are not stable on ground and are moving against an obstruction
+        if (allowWallJump && !characterMotor.GroundingStatus.IsStableOnGround && !hitStabilityReport.IsStable)
+        {
+            canWallJump = true;
+            wallJumpNormal = hitNormal;
+        }
     }
 
     public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition,
@@ -255,4 +293,17 @@ public class CharacterController : MonoBehaviour, ICharacterController
     public void OnDiscreteCollisionDetected(Collider hitCollider)
     {
     }
+
+    private void OnLanded()
+    {
+        Debug.Log("Landed");
+    }
+
+    private void OnLeaveStableGround()
+    {
+        Debug.Log("Left ground");
+    }
+    
+    /// Adds a velocity to the character controller
+    public void AddVelocity(Vector3 velocity) =>  internalVelocityAdd += velocity;
 }
