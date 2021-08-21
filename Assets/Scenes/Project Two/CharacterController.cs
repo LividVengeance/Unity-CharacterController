@@ -9,6 +9,7 @@ public enum CharacterState
 {
     Default,
     Charging,
+    Swimming,
     NoClip,
 }
 
@@ -58,6 +59,13 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private float maxChargeTime = 1.5f;
     [SerializeField, Tooltip("Time the character will remain unable to move at end of charge state")] 
     private float stoppedTime = 1f;
+    
+    [Header("Swimming")]
+    [SerializeField] private Transform swimmingReferencePoint;
+    [SerializeField] private LayerMask waterLayer;
+    [SerializeField] private float swimmingSpeed = 4f;
+    [SerializeField] private float swimmingMovementSharpness = 3;
+    [SerializeField] private float swimmingOrientationSharpness = 2f;
     
     [Header("NoClip")]
     [SerializeField, Tooltip("How fast the character will move in the no clip state")] 
@@ -109,6 +117,8 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private bool mustStopVelocity = false;
     private float timeSinceStartedCharge = 0;
     private float timeSinceStopped = 0;
+    // Swimming
+    private Collider waterZone;
     
 
     /// Start is called before the first frame update
@@ -143,6 +153,7 @@ public class CharacterController : MonoBehaviour, ICharacterController
         {
             case CharacterState.Default:
             {
+                characterMotor.SetGroundSolvingActivation(true);
                 break;
             }
             case CharacterState.Charging:
@@ -154,6 +165,11 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 isStopped = false;
                 timeSinceStartedCharge = 0f;
                 timeSinceStopped = 0f;
+                break;
+            }
+            case CharacterState.Swimming:
+            {
+                characterMotor.SetGroundSolvingActivation(false);
                 break;
             }
             case CharacterState.NoClip:
@@ -254,6 +270,14 @@ public class CharacterController : MonoBehaviour, ICharacterController
             {
                 break;
             }
+            case CharacterState.Swimming:
+            {
+                jumpRequested = inputs.JumpHeld;
+
+                moveInputVector = inputs.CameraRotation * moveInputVector;
+                lookInputVector = cameraPlanarDirection;
+                break;
+            }
             case CharacterState.NoClip:
             {
                 moveInputVector = inputs.CameraRotation * moveInputVec;
@@ -292,6 +316,24 @@ public class CharacterController : MonoBehaviour, ICharacterController
             }
             case CharacterState.Charging:
             {
+                break;
+            }
+            case CharacterState.Swimming:
+            {
+                if (lookInputVector != Vector3.zero && orientationSharpness > 0f)
+                {
+                    // Smoothly interpolate from current to target look direction
+                    Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward, lookInputVector, 
+                        1 - Mathf.Exp(-orientationSharpness * deltaTime)).normalized;
+
+                    // Set the current rotation (which will be used by the KinematicCharacterMotor)
+                    currentRotation = Quaternion.LookRotation(smoothedLookInputDirection, characterMotor.CharacterUp);
+                }
+                if (orientTowardsGravity)
+                {
+                    // Rotate from current up to invert gravity
+                    currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) * currentRotation;
+                }
                 break;
             }
             case CharacterState.NoClip:
@@ -459,6 +501,41 @@ public class CharacterController : MonoBehaviour, ICharacterController
 
                 break;
             }
+            case CharacterState.Swimming:
+            {
+                float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
+
+                // Smoothly interpolate to target swimming velocity
+                Vector3 targetMovementVelocity = (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * swimmingSpeed;
+                Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 
+                    1 - Mathf.Exp(-swimmingMovementSharpness * deltaTime));
+
+                /// See if our swimming reference point would be out of water after the movement from our velocity has been applied
+
+                Vector3 resultingSwimmingReferancePosition = 
+                    characterMotor.TransientPosition + (smoothedVelocity * deltaTime) + 
+                    (swimmingReferencePoint.position - characterMotor.TransientPosition);
+                Vector3 closestPointWaterSurface = Physics.ClosestPoint(resultingSwimmingReferancePosition, 
+                    waterZone, waterZone.transform.position, waterZone.transform.rotation);
+
+                // if our position would be outside the water surface on next update, project the velocity
+                // on the surface normal so that it would not take us out of the water
+                if (closestPointWaterSurface != resultingSwimmingReferancePosition)
+                {
+                    Vector3 waterSurfaceNormal = (resultingSwimmingReferancePosition - closestPointWaterSurface).normalized;
+                    smoothedVelocity = Vector3.ProjectOnPlane(smoothedVelocity, waterSurfaceNormal);
+
+                    // Jump out of water
+                    if (jumpRequested)
+                    {
+                        smoothedVelocity += (characterMotor.CharacterUp * jumpSpeed) - Vector3.Project(
+                            currentVelocity, characterMotor.CharacterUp);
+                    }
+                }
+
+                currentVelocity = smoothedVelocity;
+                break;
+            }
             case CharacterState.NoClip:
             {
                 float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
@@ -474,6 +551,34 @@ public class CharacterController : MonoBehaviour, ICharacterController
     /// This is called before the character has its movement update
     public void BeforeCharacterUpdate(float deltaTime)
     {
+        // Do a character overlap test to detect water surfaces
+        if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation, 
+            probedColliders, waterLayer, QueryTriggerInteraction.Collide) > 0)
+        {
+            // If a water surface was detected
+            if (probedColliders[0] != null)
+            {
+                // If the swimming reference point is inside the box, make sure we are in swimming state
+                if (Physics.ClosestPoint(swimmingReferencePoint.position, probedColliders[0], 
+                    probedColliders[0].transform.position, probedColliders[0].transform.rotation) == swimmingReferencePoint.position)
+                {
+                    if (currentCharacterState == CharacterState.Default)
+                    {
+                        TransitionToState(CharacterState.Swimming);
+                        waterZone = probedColliders[0];
+                    }
+                }
+                // otherwise; default state
+                else
+                {
+                    if (currentCharacterState == CharacterState.Swimming)
+                    {
+                        TransitionToState(CharacterState.Default);
+                    }
+                }
+            }
+        }
+
         switch (currentCharacterState)
         {
             case CharacterState.Default:
@@ -485,6 +590,14 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 // Update times
                 timeSinceStartedCharge += deltaTime;
                 if (isStopped) timeSinceStopped += deltaTime;
+                break;
+            }
+            case CharacterState.Swimming:
+            {
+                break;
+            }
+            case CharacterState.NoClip:
+            {
                 break;
             }
         }

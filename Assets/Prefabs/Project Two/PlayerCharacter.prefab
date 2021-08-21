@@ -1,5 +1,35 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2014016115
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2014016116}
+  m_Layer: 0
+  m_Name: SwimRefPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2014016116
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2014016115}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.486, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1921050794510363957}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1921050793181487589
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,6 +178,13 @@ MonoBehaviour:
   chargeSpeed: 15
   maxChargeTime: 1.5
   stoppedTime: 0.75
+  swimmingReferencePoint: {fileID: 2014016116}
+  waterLayer:
+    serializedVersion: 2
+    m_Bits: 16
+  swimmingSpeed: 4
+  swimmingMovementSharpness: 3
+  swimmingOrientationSharpness: 2
   noClipMoveSpeed: 10
   noClipSharpness: 15
   orientTowardsGravity: 1
@@ -219,6 +256,7 @@ Transform:
   m_Children:
   - {fileID: 4411023222554662172}
   - {fileID: 1921050793181487588}
+  - {fileID: 2014016116}
   m_Father: {fileID: 1921050793276241500}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
