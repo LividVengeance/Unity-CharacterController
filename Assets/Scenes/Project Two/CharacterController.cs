@@ -38,7 +38,9 @@ public class CharacterController : MonoBehaviour, ICharacterController
     [SerializeField, Tooltip("Time after leaving stable ground where jump will still be allowed")]
     private float jumpPostGroundingGraceTime = 0f;
 
-    [Header("Misc")]
+    [Header("Misc")] 
+    [SerializeField, Tooltip("Always orient its up direction in the opposite direction of the gravity")] 
+    private bool orientTowardsGravity;
     [SerializeField] private bool rotationObstruction;
     [SerializeField] private Vector3 gravity = new Vector3(0, -30f, 0);
     [SerializeField] private Transform meshRoot;
@@ -135,6 +137,12 @@ public class CharacterController : MonoBehaviour, ICharacterController
             // Set the current rotation (which will be used by the KinematicCharacterMotor)
             currentRotation = Quaternion.LookRotation(smoothedLookInputDirection, 
                 characterMotor.CharacterUp);
+            
+            if (orientTowardsGravity)
+            {
+                // Rotate from current up to invert gravity
+                currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) * currentRotation;
+            }
         }
     }
 
