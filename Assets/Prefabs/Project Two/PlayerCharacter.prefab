@@ -185,6 +185,11 @@ MonoBehaviour:
   swimmingSpeed: 4
   swimmingMovementSharpness: 3
   swimmingOrientationSharpness: 2
+  climbingSpeed: 4
+  anchoringDuration: 0.25
+  interactionLayer:
+    serializedVersion: 2
+    m_Bits: 1024
   noClipMoveSpeed: 10
   noClipSharpness: 15
   orientTowardsGravity: 1

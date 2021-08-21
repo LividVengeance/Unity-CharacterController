@@ -10,7 +10,15 @@ public enum CharacterState
     Default,
     Charging,
     Swimming,
+    Climbing,
     NoClip,
+}
+
+public enum ClimbingState
+{
+    Anchoring,
+    Climbing,
+    DeAnchoring
 }
 
 public struct PlayerCharacterInputs
@@ -26,6 +34,7 @@ public struct PlayerCharacterInputs
     public bool CrouchHeld;
     public bool ChargingDown;
     public bool NoClipDown;
+    public bool Interact;
 }
 
 public class CharacterController : MonoBehaviour, ICharacterController
@@ -66,6 +75,11 @@ public class CharacterController : MonoBehaviour, ICharacterController
     [SerializeField] private float swimmingSpeed = 4f;
     [SerializeField] private float swimmingMovementSharpness = 3;
     [SerializeField] private float swimmingOrientationSharpness = 2f;
+    
+    [Header("Ladder Climbing")]
+    [SerializeField] private float climbingSpeed = 4f;
+    [SerializeField] private float anchoringDuration = 0.25f;
+    [SerializeField] private LayerMask interactionLayer;
     
     [Header("NoClip")]
     [SerializeField, Tooltip("How fast the character will move in the no clip state")] 
@@ -117,8 +131,33 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private bool mustStopVelocity = false;
     private float timeSinceStartedCharge = 0;
     private float timeSinceStopped = 0;
-    // Swimming
+    // Swimming vars
     private Collider waterZone;
+    // Ladder vars
+    private float ladderUpDownInput;
+    private Ladder activeLadder { get; set; }
+    private ClimbingState internalClimbingState;
+    private ClimbingState climbingState
+    {
+        get
+        {
+            return internalClimbingState;
+        }
+        set
+        {
+            internalClimbingState = value;
+            anchoringTimer = 0f;
+            anchoringStartPosition = characterMotor.TransientPosition;
+            anchoringStartRotation = characterMotor.TransientRotation;
+        }
+    }
+    private Vector3 ladderTargetPosition;
+    private Quaternion ladderTargetRotation;
+    private float onLadderSegmentState = 0;
+    private float anchoringTimer = 0f;
+    private Vector3 anchoringStartPosition = Vector3.zero;
+    private Quaternion anchoringStartRotation = Quaternion.identity;
+    private Quaternion rotationBeforeClimbing = Quaternion.identity;
     
 
     /// Start is called before the first frame update
@@ -172,6 +211,19 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 characterMotor.SetGroundSolvingActivation(false);
                 break;
             }
+            case CharacterState.Climbing:
+            {
+                rotationBeforeClimbing = characterMotor.TransientRotation;
+
+                characterMotor.SetMovementCollisionsSolvingActivation(false);
+                characterMotor.SetGroundSolvingActivation(false);
+                climbingState = ClimbingState.Anchoring;
+
+                // Store the target position and rotation to snap to
+                ladderTargetPosition = activeLadder.ClosestPointOnLadderSegment(characterMotor.TransientPosition, out onLadderSegmentState);
+                ladderTargetRotation = activeLadder.transform.rotation;
+                break;
+            }
             case CharacterState.NoClip:
             {
                 // Bypass the custom collision detection
@@ -196,6 +248,12 @@ public class CharacterController : MonoBehaviour, ICharacterController
             {
                 break;
             }
+            case CharacterState.Climbing:
+            {
+                characterMotor.SetMovementCollisionsSolvingActivation(true);
+                characterMotor.SetGroundSolvingActivation(true);
+                break;
+            }
             case CharacterState.NoClip:
             {
                 // Use the custom collision detection
@@ -210,6 +268,37 @@ public class CharacterController : MonoBehaviour, ICharacterController
     /// This is called every frame by InputHandler to tell character what inputs its receiving
     public void SetInputs(ref PlayerCharacterInputs inputs)
     {
+        // Handle ladder transitions
+        ladderUpDownInput = inputs.MoveAxisForward;
+        if (inputs.Interact)
+        {
+            if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation, 
+                probedColliders, interactionLayer, QueryTriggerInteraction.Collide) > 0)
+            {
+                if (probedColliders[0] != null)
+                {
+                    // Handle ladders
+                    Ladder ladder = probedColliders[0].gameObject.GetComponent<Ladder>();
+                    if (ladder)
+                    {
+                        // Transition to ladder climbing state
+                        if (currentCharacterState == CharacterState.Default)
+                        {
+                            activeLadder = ladder;
+                            TransitionToState(CharacterState.Climbing);
+                        }
+                        // Transition back to default movement state
+                        else if (currentCharacterState == CharacterState.Climbing)
+                        {
+                            climbingState = ClimbingState.DeAnchoring;
+                            ladderTargetPosition = characterMotor.TransientPosition;
+                            ladderTargetRotation = rotationBeforeClimbing;
+                        }
+                    }
+                }
+            }
+        }
+        
         // Handle NoClip state transitions
         if (inputs.NoClipDown)
         {
@@ -333,6 +422,21 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 {
                     // Rotate from current up to invert gravity
                     currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) * currentRotation;
+                }
+                break;
+            }
+            case CharacterState.Climbing:
+            {
+                switch (climbingState)
+                {
+                    case ClimbingState.Climbing:
+                        currentRotation = activeLadder.transform.rotation;
+                        break;
+                    case ClimbingState.Anchoring:
+                    case ClimbingState.DeAnchoring:
+                        currentRotation = Quaternion.Slerp(anchoringStartRotation, 
+                            ladderTargetRotation, (anchoringTimer / anchoringDuration));
+                        break;
                 }
                 break;
             }
@@ -536,6 +640,25 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 currentVelocity = smoothedVelocity;
                 break;
             }
+            case CharacterState.Climbing:
+            {
+                currentVelocity = Vector3.zero;
+
+                switch (climbingState)
+                {
+                    case ClimbingState.Climbing:
+                        currentVelocity = (ladderUpDownInput * activeLadder.transform.up).normalized * climbingSpeed;
+                        break;
+                    case ClimbingState.Anchoring:
+                    case ClimbingState.DeAnchoring:
+                        Vector3 tmpPosition = Vector3.Lerp(anchoringStartPosition, ladderTargetPosition, 
+                            (anchoringTimer / anchoringDuration));
+                        currentVelocity = characterMotor.GetVelocityForMovePosition(
+                            characterMotor.TransientPosition, tmpPosition, deltaTime);
+                        break;
+                }
+                break;
+            }
             case CharacterState.NoClip:
             {
                 float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
@@ -678,6 +801,52 @@ public class CharacterController : MonoBehaviour, ICharacterController
                 // Detect end of stopping phase and transition back to default movement state
                 if (timeSinceStopped > stoppedTime) TransitionToState(CharacterState.Default);
 
+                break;
+            }
+            case CharacterState.Climbing:
+            {
+                switch (climbingState)
+                {
+                    case ClimbingState.Climbing:
+                        // Detect getting off ladder during climbing
+                        activeLadder.ClosestPointOnLadderSegment(characterMotor.TransientPosition, out onLadderSegmentState);
+                        if (Mathf.Abs(onLadderSegmentState) > 0.05f)
+                        {
+                            climbingState = ClimbingState.DeAnchoring;
+
+                            // If we're higher than the ladder top point
+                            if (onLadderSegmentState > 0)
+                            {
+                                ladderTargetPosition = activeLadder.GetTopReleasePoint.position;
+                                ladderTargetRotation = activeLadder.GetTopReleasePoint.rotation;
+                            }
+                            // If we're lower than the ladder bottom point
+                            else if (onLadderSegmentState < 0)
+                            {
+                                ladderTargetPosition = activeLadder.GetBottomReleasePoint.position;
+                                ladderTargetRotation = activeLadder.GetBottomReleasePoint.rotation;
+                            }
+                        }
+                        break;
+                    case ClimbingState.Anchoring:
+                    case ClimbingState.DeAnchoring:
+                        // Detect transitioning out from anchoring states
+                        if (anchoringTimer >= anchoringDuration)
+                        {
+                            if (climbingState == ClimbingState.Anchoring)
+                            {
+                                climbingState = ClimbingState.Climbing;
+                            }
+                            else if (climbingState == ClimbingState.DeAnchoring)
+                            {
+                                TransitionToState(CharacterState.Default);
+                            }
+                        }
+
+                        // Keep track of time since we started anchoring
+                        anchoringTimer += deltaTime;
+                        break;
+                }
                 break;
             }
         }

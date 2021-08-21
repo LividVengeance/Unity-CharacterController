@@ -58,6 +58,8 @@ public class InputHandler : MonoBehaviour
         characterInputs.ChargingDown = Input.GetKeyDown(KeyCode.Q);
         // NoClip
         characterInputs.NoClipDown = Input.GetKeyUp(KeyCode.N);
+        // Interact
+        characterInputs.Interact = Input.GetKeyDown(KeyCode.E);
 
         // Apply inputs to character
         character.SetInputs(ref characterInputs);
