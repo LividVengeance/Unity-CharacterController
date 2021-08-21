@@ -42,20 +42,30 @@ public class CharacterController : MonoBehaviour, ICharacterController
     public KinematicCharacterMotor characterMotor;
     
     [Header("Stable Movement")]
-    [SerializeField] private float maxStableMoveSpeed = 10f;
-    [SerializeField] private float stableMovementSharpness = 15;
-    [SerializeField] private float orientationSharpness = 10;
+    [SerializeField, Tooltip("Maximum speed the character can run on stable ground")] 
+    private float maxStableMoveSpeed = 10f;
+    [SerializeField, Tooltip("How quickly the character will come to a stop after no movement input")] 
+    private float stableMovementSharpness = 15;
+    [SerializeField, Tooltip("How quickly the character will rotate")] 
+    private float orientationSharpness = 10;
 
     [Header("Air Movement")]
-    [SerializeField] private float maxAirMoveSpeed = 10f;
-    [SerializeField] private float airAccelerationSpeed = 5f;
-    [SerializeField] private float drag = 0.1f;
+    [SerializeField, Tooltip("Maximum speed the character can move when in the air")] 
+    private float maxAirMoveSpeed = 10f;
+    [SerializeField, Tooltip("How quickly the character will accelerate when in the air")] 
+    private float airAccelerationSpeed = 5f;
+    [SerializeField, Tooltip("The amount of drag force the character will experience when in the air")] 
+    private float drag = 0.1f;
     
     [Header("Jumping")]
-    [SerializeField] private bool allowJumpingWhenSliding = false;
-    [SerializeField] private bool allowDoubleJump = false;
-    [SerializeField] private bool allowWallJump = false;
-    [SerializeField] private float jumpSpeed = 10f;
+    [SerializeField, Tooltip("Will allow the character to jump when sliding down a sharp incline")] 
+    private bool allowJumpingWhenSliding = false;
+    [SerializeField, Tooltip("Will allow the character to preform a second jump when in the air")] 
+    private bool allowDoubleJump = false;
+    [SerializeField, Tooltip("Will allow the character to jump off a wall")] 
+    private bool allowWallJump = false;
+    [SerializeField, Tooltip("How quickly the character will move upward. This will dictate jump height")] 
+    private float jumpSpeed = 10f;
     [SerializeField, Tooltip("Time before landing where jump input will still allow jump once you land")] 
     private float jumpPreGroundingGraceTime = 0f;
     [SerializeField, Tooltip("Time after leaving stable ground where jump will still be allowed")]
@@ -70,12 +80,16 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private float stoppedTime = 1f;
     
     [Header("Swimming")]
-    [SerializeField] private Transform swimmingReferencePoint;
-    [SerializeField] private LayerMask waterLayer;
-    [SerializeField] private float swimmingSpeed = 4f;
-    [SerializeField] private float swimmingMovementSharpness = 3;
-    [SerializeField] private float swimmingOrientationSharpness = 2f;
-    
+    [SerializeField, Tooltip("Point used to determine if character is in water")] 
+    private Transform swimmingReferencePoint;
+    [SerializeField, Tooltip("Layer character will use to determine if in water")]
+    private LayerMask waterLayer;
+    [SerializeField, Tooltip("How quickly the character can move when in water")] 
+    private float swimmingSpeed = 4f;
+    [SerializeField, Tooltip("How quickly the character will come to a stop after no movement input when " +
+                             "in the swimming state")] 
+    private float swimmingMovementSharpness = 3;
+
     [Header("Ladder Climbing")]
     [SerializeField] private float climbingSpeed = 4f;
     [SerializeField] private float anchoringDuration = 0.25f;
@@ -89,7 +103,6 @@ public class CharacterController : MonoBehaviour, ICharacterController
     [Header("Misc")] 
     [SerializeField, Tooltip("Always orient its up direction in the opposite direction of the gravity")] 
     private bool orientTowardsGravity;
-    [SerializeField] private bool rotationObstruction;
     [SerializeField] private Vector3 gravity = new Vector3(0, -30f, 0);
     [SerializeField] private Transform meshRoot;
     [SerializeField, Tooltip("Ignore physics collision on these layers")] 
@@ -139,10 +152,7 @@ public class CharacterController : MonoBehaviour, ICharacterController
     private ClimbingState internalClimbingState;
     private ClimbingState climbingState
     {
-        get
-        {
-            return internalClimbingState;
-        }
+        get => internalClimbingState;
         set
         {
             internalClimbingState = value;
