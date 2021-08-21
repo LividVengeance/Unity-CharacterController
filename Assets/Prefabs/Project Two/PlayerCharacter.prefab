@@ -133,6 +133,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterMotor: {fileID: 1921050793276241502}
+  maxStableMoveSpeed: 10
+  stableMovementSharpness: 15
+  orientationSharpness: 10
+  maxAirMoveSpeed: 10
+  airAccelerationSpeed: 5
+  drag: 0.1
+  allowJumpingWhenSliding: 0
+  allowDoubleJump: 1
+  allowWallJump: 1
+  jumpSpeed: 10
+  jumpPreGroundingGraceTime: 0
+  jumpPostGroundingGraceTime: 0
+  orientTowardsGravity: 1
+  rotationObstruction: 0
+  gravity: {x: 0, y: -30, z: 0}
+  meshRoot: {fileID: 1921050794510363957}
+  rotateToCameraFacing: 1
 --- !u!1 &1921050793316649541
 GameObject:
   m_ObjectHideFlags: 0
