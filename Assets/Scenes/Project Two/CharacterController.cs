@@ -44,6 +44,8 @@ public class CharacterController : MonoBehaviour, ICharacterController
     [SerializeField] private bool rotationObstruction;
     [SerializeField] private Vector3 gravity = new Vector3(0, -30f, 0);
     [SerializeField] private Transform meshRoot;
+    [SerializeField, Tooltip("Ignore physics collision on these layers")] 
+    List<string> ignoredLayers = new List<string>();
     
     [Header("Camera")]
     [SerializeField, Tooltip("Will have the character face camera look direction")] 
@@ -314,8 +316,13 @@ public class CharacterController : MonoBehaviour, ICharacterController
         }
     }
 
+    /// Return true if character controller can collide with this collider else is false
     public bool IsColliderValidForCollisions(Collider coll)
     {
+        string collLayer = LayerMask.LayerToName(coll.gameObject.layer);
+        // Checks if layer is in ignore list
+        if (ignoredLayers.Contains(collLayer)) return false;
+
         return true;
     }
 

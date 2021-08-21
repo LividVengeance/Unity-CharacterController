@@ -10,7 +10,7 @@ public class MovingPlatform : MonoBehaviour, IMoverController
     // Start is called before the first frame update
     void Start()
     {
-        mover.MoverController = this;
+        //mover.MoverController = this;
     }
 
     // Update is called once per frame
