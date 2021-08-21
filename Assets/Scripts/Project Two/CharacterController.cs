@@ -120,8 +120,14 @@ namespace ProjectTwo
         [Header("Camera")] [SerializeField, Tooltip("Will have the character face camera look direction")]
         private bool rotateToCameraFacing = true;
 
+        [Header("Animations")] 
+        [SerializeField, Tooltip("Animation controller the characters model is using")]
+        private Animator animator;
+
         // Character state
         public CharacterState currentCharacterState { get; private set; }
+        
+        private Vector3 groundNormalRelativeVelocity = Vector3.zero;
 
         // Input vectors
         private Vector3 moveInputVector;
@@ -295,8 +301,8 @@ namespace ProjectTwo
             }
         }
 
-        /// This is called every frame by InputHandler to tell character what inputs its receiving
-        public void SetInputs(ref PlayerCharacterInputs inputs)
+        /// Handles the transition to the sprint character state
+        private void SprintTransitionHandler(ref PlayerCharacterInputs inputs)
         {
             // Handle sprint transitions
             if (inputs.SprintDown)
@@ -304,7 +310,11 @@ namespace ProjectTwo
                 if (currentCharacterState == CharacterState.Default) TransitionToState(CharacterState.Sprinting);
             }
             else if (!inputs.SprintDown && currentCharacterState == CharacterState.Sprinting) TransitionToState(CharacterState.Default);
-            
+        }
+
+        /// Handles the transition to the climbing character state
+        private void ClimbingTransitionHandler(ref PlayerCharacterInputs inputs)
+        {
             // Handle ladder transitions
             ladderUpDownInput = inputs.MoveAxisForward;
             if (inputs.InteractDown)
@@ -335,13 +345,64 @@ namespace ProjectTwo
                     }
                 }
             }
+        }
 
+        /// Handles the transition to the noClip character state
+        private void NoClipTransitionHandler(ref PlayerCharacterInputs inputs)
+        {
             // Handle NoClip state transitions
             if (inputs.NoClipDown)
             {
                 if (currentCharacterState == CharacterState.Default) TransitionToState(CharacterState.NoClip);
                 else if (currentCharacterState == CharacterState.NoClip) TransitionToState(CharacterState.Default);
             }
+        }
+
+        private void CrouchHandler(ref PlayerCharacterInputs inputs)
+        {
+            // Crouching input
+            if (inputs.CrouchDown)
+            {
+                shouldBeCrouching = true;
+
+                if (!isCrouching)
+                {
+                    isCrouching = true;
+                    characterMotor.SetCapsuleDimensions(0.5f, 1f, 0.5f);
+                    meshRoot.localScale = new Vector3(1f, 0.5f, 1f);
+                }
+            }
+            else if (inputs.CrouchUp) shouldBeCrouching = false;
+        }
+
+        private void JumpRequestCheck(ref PlayerCharacterInputs inputs)
+        {
+            // Jumping input
+            if (inputs.JumpDown)
+            {
+                timeSinceJumpRequested = 0f;
+                jumpRequested = true;
+            }
+        }
+
+        private void MoveAndLookInput(Quaternion cameraPlanarRotation, Vector3 moveInputVec, Vector3 cameraPlanarDirection)
+        {
+            // Move and look inputs
+            moveInputVector = cameraPlanarRotation * moveInputVec;
+            lookInputVector = cameraPlanarDirection;
+        }
+        
+        /// This is called every frame by InputHandler to tell character what inputs its receiving
+        public void SetInputs(ref PlayerCharacterInputs inputs)
+        {
+            // Handle sprint state transitions
+            SprintTransitionHandler(ref inputs);
+
+            // Handle climbing state transitions
+            ClimbingTransitionHandler(ref inputs);
+
+            // Handle NoClip state transitions
+            NoClipTransitionHandler(ref inputs);
 
             // Held down keys
             jumpInputIsHeld = inputs.JumpHeld;
@@ -371,37 +432,19 @@ namespace ProjectTwo
                 case CharacterState.Default:
                 {
                     // Move and look inputs
-                    moveInputVector = cameraPlanarRotation * moveInputVec;
-                    lookInputVector = cameraPlanarDirection;
+                    MoveAndLookInput(cameraPlanarRotation, moveInputVec, cameraPlanarDirection);
 
-                    // Jumping input
-                    if (inputs.JumpDown)
-                    {
-                        timeSinceJumpRequested = 0f;
-                        jumpRequested = true;
-                    }
+                    // Requests a jump if the key is down
+                    JumpRequestCheck(ref inputs);
 
-                    // Crouching input
-                    if (inputs.CrouchDown)
-                    {
-                        shouldBeCrouching = true;
-
-                        if (!isCrouching)
-                        {
-                            isCrouching = true;
-                            characterMotor.SetCapsuleDimensions(0.5f, 1f, 0.5f);
-                            meshRoot.localScale = new Vector3(1f, 0.5f, 1f);
-                        }
-                    }
-                    else if (inputs.CrouchUp) shouldBeCrouching = false;
-
+                    // Crouches if the key is down
+                    CrouchHandler(ref inputs);
                     break;
                 }
                 case CharacterState.Sprinting:
                 {
                     // Move and look inputs
-                    moveInputVector = cameraPlanarRotation * moveInputVec;
-                    lookInputVector = cameraPlanarDirection;
+                    MoveAndLookInput(cameraPlanarRotation, moveInputVec, cameraPlanarDirection);
                     break;
                 }
                 case CharacterState.Charging:
@@ -412,15 +455,37 @@ namespace ProjectTwo
                 {
                     jumpRequested = inputs.JumpHeld;
 
-                    moveInputVector = inputs.CameraRotation * moveInputVector;
-                    lookInputVector = cameraPlanarDirection;
+                    // Move and look inputs
+                    MoveAndLookInput(inputs.CameraRotation, moveInputVec, cameraPlanarDirection);
                     break;
                 }
                 case CharacterState.NoClip:
                 {
-                    moveInputVector = inputs.CameraRotation * moveInputVec;
-                    lookInputVector = cameraPlanarDirection;
+                    // Move and look inputs
+                    MoveAndLookInput(inputs.CameraRotation, moveInputVec, cameraPlanarDirection);
                     break;
+                }
+            }
+        }
+
+        private void CharacterRotation(ref Quaternion currentRotation, float deltaTime, float _orientationSharpness)
+        {
+            if (rotateToCameraFacing && lookInputVector != Vector3.zero && _orientationSharpness > 0f)
+            {
+                // Smoothly interpolate from current to target look direction
+                Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward,
+                    lookInputVector,
+                    1 - Mathf.Exp(-_orientationSharpness * deltaTime)).normalized;
+
+                // Set the current rotation (which will be used by the KinematicCharacterMotor)
+                currentRotation = Quaternion.LookRotation(smoothedLookInputDirection,
+                    characterMotor.CharacterUp);
+
+                if (orientTowardsGravity)
+                {
+                    // Rotate from current up to invert gravity
+                    currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
+                                      currentRotation;
                 }
             }
         }
@@ -432,48 +497,12 @@ namespace ProjectTwo
             {
                 case CharacterState.Default:
                 {
-                    if (rotateToCameraFacing && lookInputVector != Vector3.zero && orientationSharpness > 0f)
-                    {
-                        // Smoothly interpolate from current to target look direction
-                        Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward,
-                            lookInputVector,
-                            1 - Mathf.Exp(-orientationSharpness * deltaTime)).normalized;
-
-                        // Set the current rotation (which will be used by the KinematicCharacterMotor)
-                        currentRotation = Quaternion.LookRotation(smoothedLookInputDirection,
-                            characterMotor.CharacterUp);
-
-                        if (orientTowardsGravity)
-                        {
-                            // Rotate from current up to invert gravity
-                            currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
-                                              currentRotation;
-                        }
-                    }
-
+                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
                     break;
                 }
                 case CharacterState.Sprinting:
                 {
-                    if (rotateToCameraFacing && lookInputVector != Vector3.zero && sprintMovementSharpness > 0f)
-                    {
-                        // Smoothly interpolate from current to target look direction
-                        Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward,
-                            lookInputVector,
-                            1 - Mathf.Exp(-sprintMovementSharpness * deltaTime)).normalized;
-
-                        // Set the current rotation (which will be used by the KinematicCharacterMotor)
-                        currentRotation = Quaternion.LookRotation(smoothedLookInputDirection,
-                            characterMotor.CharacterUp);
-
-                        if (orientTowardsGravity)
-                        {
-                            // Rotate from current up to invert gravity
-                            currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
-                                              currentRotation;
-                        }
-                    }
-
+                    CharacterRotation(ref currentRotation, deltaTime, sprintOrientationSharpness);
                     break;
                 }
                 case CharacterState.Charging:
@@ -482,25 +511,7 @@ namespace ProjectTwo
                 }
                 case CharacterState.Swimming:
                 {
-                    if (lookInputVector != Vector3.zero && orientationSharpness > 0f)
-                    {
-                        // Smoothly interpolate from current to target look direction
-                        Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward,
-                            lookInputVector,
-                            1 - Mathf.Exp(-orientationSharpness * deltaTime)).normalized;
-
-                        // Set the current rotation (which will be used by the KinematicCharacterMotor)
-                        currentRotation =
-                            Quaternion.LookRotation(smoothedLookInputDirection, characterMotor.CharacterUp);
-                    }
-
-                    if (orientTowardsGravity)
-                    {
-                        // Rotate from current up to invert gravity
-                        currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
-                                          currentRotation;
-                    }
-
+                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
                     break;
                 }
                 case CharacterState.Climbing:
@@ -521,24 +532,7 @@ namespace ProjectTwo
                 }
                 case CharacterState.NoClip:
                 {
-                    if (lookInputVector != Vector3.zero && orientationSharpness > 0f)
-                    {
-                        // Smoothly interpolate from current to target look direction
-                        Vector3 smoothedLookInputDirection = Vector3.Slerp(characterMotor.CharacterForward,
-                            lookInputVector, 1 - Mathf.Exp(-orientationSharpness * deltaTime)).normalized;
-
-                        // Set the current rotation (which will be used by the KinematicCharacterMotor)
-                        currentRotation =
-                            Quaternion.LookRotation(smoothedLookInputDirection, characterMotor.CharacterUp);
-                    }
-
-                    if (orientTowardsGravity)
-                    {
-                        // Rotate from current up to invert gravity
-                        currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
-                                          currentRotation;
-                    }
-
+                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
                     break;
                 }
             }
@@ -551,6 +545,8 @@ namespace ProjectTwo
             {
                 case CharacterState.Default:
                 {
+                    groundNormalRelativeVelocity = currentVelocity;
+                    
                     Vector3 targetMovementVelocity = Vector3.zero;
 
                     // Is on stable ground
@@ -900,6 +896,11 @@ namespace ProjectTwo
             {
                 case CharacterState.Default:
                 {
+                    Vector3 characterRelativeVelocity = transform.InverseTransformVector(characterMotor.Velocity);
+                    // Animation
+                    animator.SetFloat("velocityZ", characterRelativeVelocity.z / maxStableMoveSpeed);
+                    animator.SetFloat("velocityX", characterRelativeVelocity.x / maxStableMoveSpeed);
+                    
                     // Handle jumping pre-ground grace period
                     if (jumpRequested && timeSinceJumpRequested > jumpPreGroundingGraceTime) jumpRequested = false;
 
@@ -945,6 +946,10 @@ namespace ProjectTwo
                 }
                 case CharacterState.Sprinting:
                 {
+                    Vector3 characterRelativeVelocity = transform.InverseTransformVector(characterMotor.Velocity);
+                    // Animation
+                    animator.SetFloat("velocityZ", Mathf.Clamp(characterRelativeVelocity.z, -2, 2));
+                    animator.SetFloat("velocityX", Mathf.Clamp(characterRelativeVelocity.x, -2, 2));
                     break;
                 }
                 case CharacterState.Charging:
@@ -1090,5 +1095,7 @@ namespace ProjectTwo
                     break;
             }
         }
+        
+        public Vector3 GetCurrentVelocity() => groundNormalRelativeVelocity;
     }
 }
