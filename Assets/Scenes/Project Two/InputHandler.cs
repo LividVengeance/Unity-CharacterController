@@ -47,10 +47,17 @@ public class InputHandler : MonoBehaviour
         characterInputs.MoveAxisForward = Input.GetAxisRaw("Vertical");
         characterInputs.MoveAxisRight = Input.GetAxisRaw("Horizontal");
         characterInputs.CameraRotation = OrbitCamera.Transform.rotation;
+        // Jump
         characterInputs.JumpDown = Input.GetKeyDown(KeyCode.Space);
+        characterInputs.JumpHeld = Input.GetKey(KeyCode.Space);
+        // Crouch
         characterInputs.CrouchDown = Input.GetKeyDown(KeyCode.C);
         characterInputs.CrouchUp = Input.GetKeyUp(KeyCode.C);
+        characterInputs.CrouchHeld = Input.GetKey(KeyCode.C);
+        // Charge
         characterInputs.ChargingDown = Input.GetKeyDown(KeyCode.Q);
+        // NoClip
+        characterInputs.NoClipDown = Input.GetKeyUp(KeyCode.N);
 
         // Apply inputs to character
         character.SetInputs(ref characterInputs);

@@ -1068,26 +1068,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: ignoredLayers.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: ignoredColliders.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: ignoredLayers.Array.data[0]
-      value: Ignore Collider
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: ignoredColliders.Array.data[0]
-      value: 
-      objectReference: {fileID: 381308452}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: m_RootOrder

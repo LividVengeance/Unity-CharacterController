@@ -147,7 +147,9 @@ MonoBehaviour:
   jumpPostGroundingGraceTime: 0
   chargeSpeed: 15
   maxChargeTime: 1.5
-  stoppedTime: 1
+  stoppedTime: 0.75
+  noClipMoveSpeed: 10
+  noClipSharpness: 15
   orientTowardsGravity: 1
   rotationObstruction: 0
   gravity: {x: 0, y: -30, z: 0}
