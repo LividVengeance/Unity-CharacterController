@@ -145,10 +145,15 @@ MonoBehaviour:
   jumpSpeed: 10
   jumpPreGroundingGraceTime: 0
   jumpPostGroundingGraceTime: 0
+  chargeSpeed: 15
+  maxChargeTime: 1.5
+  stoppedTime: 1
   orientTowardsGravity: 1
   rotationObstruction: 0
   gravity: {x: 0, y: -30, z: 0}
   meshRoot: {fileID: 1921050794510363957}
+  ignoredLayers:
+  - Ignore Collider
   rotateToCameraFacing: 1
 --- !u!1 &1921050793316649541
 GameObject:
