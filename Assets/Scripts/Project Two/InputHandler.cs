@@ -13,7 +13,10 @@ namespace ProjectTwo
         public Transform cameraFollowPoint;
         public CharacterController character;
 
+        private bool inputsEnabled = true;
+
         private Vector3 lookInputVector;
+        
 
         // Start is called before the first frame update
         void Start()
@@ -30,42 +33,38 @@ namespace ProjectTwo
         }
 
         // Update is called once per frame
-        void Update()
-        {
-            HandleCharacterInput();
-        }
-
-        private void LateUpdate()
-        {
-            HandleCameraInput();
-        }
+        void Update() => HandleCharacterInput();
+        private void LateUpdate() => HandleCameraInput();
 
         private void HandleCharacterInput()
         {
-            PlayerCharacterInputs characterInputs = new PlayerCharacterInputs();
+            if (inputsEnabled)
+            {
+                PlayerCharacterInputs characterInputs = new PlayerCharacterInputs();
 
-            // Build the CharacterInputs struct
-            characterInputs.MoveAxisForward = Input.GetAxisRaw("Vertical");
-            characterInputs.MoveAxisRight = Input.GetAxisRaw("Horizontal");
-            characterInputs.CameraRotation = OrbitCamera.Transform.rotation;
-            // Jump
-            characterInputs.JumpDown = Input.GetKeyDown(KeyCode.Space);
-            characterInputs.JumpHeld = Input.GetKey(KeyCode.Space);
-            // Crouch
-            characterInputs.CrouchDown = Input.GetKeyDown(KeyCode.C);
-            characterInputs.CrouchUp = Input.GetKeyUp(KeyCode.C);
-            characterInputs.CrouchHeld = Input.GetKey(KeyCode.C);
-            // Charge
-            characterInputs.ChargingDown = Input.GetKeyDown(KeyCode.Q);
-            // NoClip
-            characterInputs.NoClipDown = Input.GetKeyUp(KeyCode.N);
-            // Interact
-            characterInputs.InteractDown = Input.GetKeyDown(KeyCode.E);
-            // Sprint
-            characterInputs.SprintDown = Input.GetKey(KeyCode.LeftShift);
+                // Build the CharacterInputs struct
+                characterInputs.MoveAxisForward = Input.GetAxisRaw("Vertical");
+                characterInputs.MoveAxisRight = Input.GetAxisRaw("Horizontal");
+                characterInputs.CameraRotation = OrbitCamera.Transform.rotation;
+                // Jump
+                characterInputs.JumpDown = Input.GetKeyDown(KeyCode.Space);
+                characterInputs.JumpHeld = Input.GetKey(KeyCode.Space);
+                // Crouch
+                characterInputs.CrouchDown = Input.GetKeyDown(KeyCode.C);
+                characterInputs.CrouchUp = Input.GetKeyUp(KeyCode.C);
+                characterInputs.CrouchHeld = Input.GetKey(KeyCode.C);
+                // Charge
+                characterInputs.ChargingDown = Input.GetKeyDown(KeyCode.Q);
+                // NoClip
+                characterInputs.NoClipDown = Input.GetKeyUp(KeyCode.N);
+                // Interact
+                characterInputs.InteractDown = Input.GetKeyDown(KeyCode.E);
+                // Sprint
+                characterInputs.SprintDown = Input.GetKey(KeyCode.LeftShift);
 
-            // Apply inputs to character
-            character.SetInputs(ref characterInputs);
+                // Apply inputs to character
+                character.SetInputs(ref characterInputs);
+            }
         }
 
         private void HandleCameraInput()
@@ -87,5 +86,7 @@ namespace ProjectTwo
                 OrbitCamera.TargetDistance = (OrbitCamera.TargetDistance == 0f) ? OrbitCamera.DefaultDistance : 0f;
             }
         }
+        
+        public void SetInputStatus(bool allow) => inputsEnabled = allow;
     }
 }

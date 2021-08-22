@@ -628,6 +628,11 @@ PrefabInstance:
       objectReference: {fileID: 656267417}
     - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
+      propertyPath: inputHandler
+      value: 
+      objectReference: {fileID: 1128871951}
+    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+        type: 3}
       propertyPath: maxSprintSpeed
       value: 25
       objectReference: {fileID: 0}
@@ -635,6 +640,11 @@ PrefabInstance:
         type: 3}
       propertyPath: maxAirMoveSpeed
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+        type: 3}
+      propertyPath: maxStableMoveSpeed
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
@@ -723,6 +733,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+--- !u!114 &1128871951 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1921050794510363956, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+    type: 3}
+  m_PrefabInstance: {fileID: 657526107}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 265b5798a218d024294b43a11bad768f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1156815641
 GameObject:
   m_ObjectHideFlags: 0

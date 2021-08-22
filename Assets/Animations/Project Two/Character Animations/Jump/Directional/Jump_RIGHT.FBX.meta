@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: aefdc9f9f01fe4740b0becbd7f7cd755
+guid: a03bb5bf5558ff049aeb34926e8d5796
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable:
   - first:
       74: 1827226128182048838
-    second: Jog_Forward
+    second: Jump_Right
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -20,11 +20,10 @@ ModelImporter:
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: "Copied Avatar Rig Configuration mis-match. Bone length in
-      copied configuration does not match position in animation file:\n\t'thigh_l'
-      : position error = 23.437860 mm\n\t'calf_l' : position error = 9.056389 mm\n\t'foot_l'
-      : position error = 8.861722 mm\n\t'ball_l' : position error = 1.655123 mm\n\t'thigh_r'
-      : position error = 15.715998 mm\n\t'calf_r' : position error = 11.556850 mm\n\t'foot_r'
-      : position error = 11.270668 mm\n\t'ball_r' : position error = 5.816165 mm\n"
+      copied configuration does not match position in animation file:\n\t'calf_l'
+      : position error = 22.055649 mm\n\t'foot_l' : position error = 8.019773 mm\n\t'ball_l'
+      : position error = 7.469430 mm\n\t'calf_r' : position error = 18.446312 mm\n\t'foot_r'
+      : position error = 10.506958 mm\n\t'ball_r' : position error = 3.990053 mm\n"
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
@@ -82,23 +81,23 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Jog_Forward
+      name: Jump_Right
       takeName: Take 001
       internalID: 0
       firstFrame: 0
-      lastFrame: 28
+      lastFrame: 39
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
-      keepOriginalOrientation: 1
+      keepOriginalOrientation: 0
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
       heightFromFeet: 0

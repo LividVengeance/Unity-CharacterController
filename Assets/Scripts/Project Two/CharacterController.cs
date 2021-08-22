@@ -60,6 +60,8 @@ namespace ProjectTwo
         private float sprintMovementSharpness = 5;
         [SerializeField, Tooltip("How quickly the character will rotate when in the sprint state")]
         private float sprintOrientationSharpness = 2;
+        [SerializeField, Tooltip("Allow jumping while in the sprinting state")]
+        private bool allowJumpingWhileSprinting = true;
 
         [Header("Air Movement")] [SerializeField, Tooltip("Maximum speed the character can move when in the air")]
         private float maxAirMoveSpeed = 10f;
@@ -120,9 +122,14 @@ namespace ProjectTwo
         [Header("Camera")] [SerializeField, Tooltip("Will have the character face camera look direction")]
         private bool rotateToCameraFacing = true;
 
+        [Header("Inputs")] [SerializeField] private InputHandler inputHandler;
+        
         [Header("Animations")] 
         [SerializeField, Tooltip("Animation controller the characters model is using")]
         private Animator animator;
+        [SerializeField, Tooltip("Play Spawn in animation. Note this will disable character inputs " +
+                                 "still animation has finished")]
+        private bool playSpawnAnimation = true;
 
         // Character state
         public CharacterState currentCharacterState { get; private set; }
@@ -164,6 +171,8 @@ namespace ProjectTwo
         private float ladderUpDownInput;
         private Ladder activeLadder { get; set; }
         private ClimbingState internalClimbingState;
+        // Animation vars
+        //private float 
 
         private ClimbingState climbingState
         {
@@ -194,6 +203,15 @@ namespace ProjectTwo
 
             // Sets the initial state
             TransitionToState(CharacterState.Default);
+
+            if (playSpawnAnimation) StartCoroutine(SpawnAnimationStopInputs());
+        }
+
+        private IEnumerator SpawnAnimationStopInputs()
+        {
+            inputHandler.SetInputStatus(false);
+            yield return (new WaitForSeconds(animator.GetCurrentAnimatorClipInfo(0)[0].clip.length));
+            inputHandler.SetInputStatus(true);
         }
 
         /// Update is called once per frame
@@ -382,6 +400,8 @@ namespace ProjectTwo
             {
                 timeSinceJumpRequested = 0f;
                 jumpRequested = true;
+                
+                animator.SetTrigger("jumpTrigger");
             }
         }
 
@@ -445,6 +465,9 @@ namespace ProjectTwo
                 {
                     // Move and look inputs
                     MoveAndLookInput(cameraPlanarRotation, moveInputVec, cameraPlanarDirection);
+                    
+                    // Requests a jump if the key is down
+                    JumpRequestCheck(ref inputs);
                     break;
                 }
                 case CharacterState.Charging:
@@ -538,214 +561,133 @@ namespace ProjectTwo
             }
         }
 
-        /// This is where you tell your character what its velocity should be right now. 
-        public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
+        private void JumpHandler(ref Vector3 currentVelocity, float deltaTime)
         {
-            switch (currentCharacterState)
+            // Handle jumping
+            jumpedThisFrame = false;
+            timeSinceJumpRequested += deltaTime;
+            if (jumpRequested)
             {
-                case CharacterState.Default:
+                // Handle double jump
+                if (allowDoubleJump)
                 {
-                    groundNormalRelativeVelocity = currentVelocity;
+                    if (jumpConsumed && !doubleJumpConsumed && (allowJumpingWhenSliding
+                        ? !characterMotor.GroundingStatus.FoundAnyGround
+                        : !characterMotor.GroundingStatus.IsStableOnGround))
+                    {
+                        characterMotor.ForceUnground(0.1f);
+
+                        // Add to the return velocity and reset jump state
+                        currentVelocity += (characterMotor.CharacterUp * jumpSpeed) -
+                                           Vector3.Project(currentVelocity, characterMotor.CharacterUp);
+                        jumpRequested = false;
+                        doubleJumpConsumed = true;
+                        jumpedThisFrame = true;
+                    }
+                }
+
+                // See if we actually are allowed to jump
+                if (canWallJump || !jumpConsumed &&
+                    ((allowJumpingWhenSliding
+                         ? characterMotor.GroundingStatus.FoundAnyGround
+                         : characterMotor.GroundingStatus.IsStableOnGround) ||
+                     timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
+                {
+                    // Calculate jump direction before un-grounding
+                    Vector3 jumpDirection = characterMotor.CharacterUp;
+
+                    // Wall jumping direction
+                    if (canWallJump) jumpDirection = wallJumpNormal;
+                    // Normal/double jumping direction
+                    else if (characterMotor.GroundingStatus.FoundAnyGround &&
+                             !characterMotor.GroundingStatus.IsStableOnGround)
+                    {
+                        jumpDirection = characterMotor.GroundingStatus.GroundNormal;
+                    }
+
+                    // Makes the character skip ground probing/snapping on its next update. 
+                    characterMotor.ForceUnground(0.1f);
+
+                    // Add to the return velocity and reset jump state
+                    currentVelocity += (jumpDirection * jumpSpeed) -
+                                       Vector3.Project(currentVelocity, characterMotor.CharacterUp);
+                    jumpRequested = false;
+                    jumpConsumed = true;
+                    jumpedThisFrame = true;
+                }
+
+                // Reset wall jump
+                canWallJump = false;
+            }
+        }
+
+        private void ExternalForceHandler(ref Vector3 currentVelocity)
+        {
+            // Take into account additive velocity
+            if (internalVelocityAdd.sqrMagnitude > 0f)
+            {
+                currentVelocity += internalVelocityAdd;
+                internalVelocityAdd = Vector3.zero;
+            }
+        }
+
+        private void GroundMovementHandler(ref Vector3 currentVelocity, float deltaTime, float movementSharpness, float maxMoveSpeed)
+        {
+            groundNormalRelativeVelocity = currentVelocity;
                     
-                    Vector3 targetMovementVelocity = Vector3.zero;
+            Vector3 targetMovementVelocity = Vector3.zero;
 
-                    // Is on stable ground
-                    if (characterMotor.GroundingStatus.IsStableOnGround)
-                    {
-                        // Reorient source velocity on current ground slope
-                        // (this is because we don't want our smoothing to cause any velocity losses in slope changes)
-                        currentVelocity = characterMotor.GetDirectionTangentToSurface(currentVelocity,
-                            characterMotor.GroundingStatus.GroundNormal) * currentVelocity.magnitude;
+            // Is on stable ground
+            if (characterMotor.GroundingStatus.IsStableOnGround)
+            {
+                // Reorient source velocity on current ground slope
+                // (this is because we don't want our smoothing to cause any velocity losses in slope changes)
+                currentVelocity = characterMotor.GetDirectionTangentToSurface(currentVelocity,
+                    characterMotor.GroundingStatus.GroundNormal) * currentVelocity.magnitude;
 
-                        // Calculate target velocity
-                        Vector3 inputRight = Vector3.Cross(moveInputVector, characterMotor.CharacterUp);
-                        Vector3 reorientedInput = Vector3.Cross(characterMotor.GroundingStatus.GroundNormal,
-                            inputRight).normalized * moveInputVector.magnitude;
-                        targetMovementVelocity = reorientedInput * maxStableMoveSpeed;
+                // Calculate target velocity
+                Vector3 inputRight = Vector3.Cross(moveInputVector, characterMotor.CharacterUp);
+                Vector3 reorientedInput = Vector3.Cross(characterMotor.GroundingStatus.GroundNormal,
+                    inputRight).normalized * moveInputVector.magnitude;
+                targetMovementVelocity = reorientedInput * maxMoveSpeed;
 
-                        // Smooth movement Velocity
-                        currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
-                            1 - Mathf.Exp(-stableMovementSharpness * deltaTime));
-                    }
-                    else
-                    {
-                        // Add move input
-                        if (moveInputVector.sqrMagnitude > 0f)
-                        {
-                            targetMovementVelocity = moveInputVector * maxAirMoveSpeed;
-
-                            // Prevent climbing on un-stable slopes with air movement
-                            if (characterMotor.GroundingStatus.FoundAnyGround)
-                            {
-                                Vector3 perpenticularObstructionNormal = Vector3.Cross(Vector3.Cross(
-                                        characterMotor.CharacterUp, characterMotor.GroundingStatus.GroundNormal),
-                                    characterMotor.CharacterUp).normalized;
-                                targetMovementVelocity = Vector3.ProjectOnPlane(
-                                    targetMovementVelocity, perpenticularObstructionNormal);
-                            }
-
-                            Vector3 velocityDiff =
-                                Vector3.ProjectOnPlane(targetMovementVelocity - currentVelocity, gravity);
-                            currentVelocity += velocityDiff * airAccelerationSpeed * deltaTime;
-                        }
-
-                        // Gravity
-                        currentVelocity += gravity * deltaTime;
-
-                        // Drag
-                        currentVelocity *= (1f / (1f + (drag * deltaTime)));
-                    }
-
-                    // Handle jumping
-                    jumpedThisFrame = false;
-                    timeSinceJumpRequested += deltaTime;
-                    if (jumpRequested)
-                    {
-                        // Handle double jump
-                        if (allowDoubleJump)
-                        {
-                            if (jumpConsumed && !doubleJumpConsumed && (allowJumpingWhenSliding
-                                ? !characterMotor.GroundingStatus.FoundAnyGround
-                                : !characterMotor.GroundingStatus.IsStableOnGround))
-                            {
-                                characterMotor.ForceUnground(0.1f);
-
-                                // Add to the return velocity and reset jump state
-                                currentVelocity += (characterMotor.CharacterUp * jumpSpeed) -
-                                                   Vector3.Project(currentVelocity, characterMotor.CharacterUp);
-                                jumpRequested = false;
-                                doubleJumpConsumed = true;
-                                jumpedThisFrame = true;
-                            }
-                        }
-
-                        // See if we actually are allowed to jump
-                        if (canWallJump || !jumpConsumed &&
-                            ((allowJumpingWhenSliding
-                                 ? characterMotor.GroundingStatus.FoundAnyGround
-                                 : characterMotor.GroundingStatus.IsStableOnGround) ||
-                             timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
-                        {
-                            // Calculate jump direction before un-grounding
-                            Vector3 jumpDirection = characterMotor.CharacterUp;
-
-                            // Wall jumping direction
-                            if (canWallJump) jumpDirection = wallJumpNormal;
-                            // Normal/double jumping direction
-                            else if (characterMotor.GroundingStatus.FoundAnyGround &&
-                                     !characterMotor.GroundingStatus.IsStableOnGround)
-                            {
-                                jumpDirection = characterMotor.GroundingStatus.GroundNormal;
-                            }
-
-                            // Makes the character skip ground probing/snapping on its next update. 
-                            characterMotor.ForceUnground(0.1f);
-
-                            // Add to the return velocity and reset jump state
-                            currentVelocity += (jumpDirection * jumpSpeed) -
-                                               Vector3.Project(currentVelocity, characterMotor.CharacterUp);
-                            jumpRequested = false;
-                            jumpConsumed = true;
-                            jumpedThisFrame = true;
-                        }
-
-                        // Reset wall jump
-                        canWallJump = false;
-                    }
-
-                    // Take into account additive velocity
-                    if (internalVelocityAdd.sqrMagnitude > 0f)
-                    {
-                        currentVelocity += internalVelocityAdd;
-                        internalVelocityAdd = Vector3.zero;
-                    }
-
-                    break;
-                }
-                case CharacterState.Sprinting:
+                // Smooth movement Velocity
+                currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
+                    1 - Mathf.Exp(-movementSharpness * deltaTime));
+            }
+            else
+            {
+                // Add move input
+                if (moveInputVector.sqrMagnitude > 0f)
                 {
-                    Vector3 targetMovementVelocity = Vector3.zero;
+                    targetMovementVelocity = moveInputVector * maxAirMoveSpeed;
 
-                    // Is on stable ground
-                    if (characterMotor.GroundingStatus.IsStableOnGround)
+                    // Prevent climbing on un-stable slopes with air movement
+                    if (characterMotor.GroundingStatus.FoundAnyGround)
                     {
-                        // Reorient source velocity on current ground slope
-                        // (this is because we don't want our smoothing to cause any velocity losses in slope changes)
-                        currentVelocity = characterMotor.GetDirectionTangentToSurface(currentVelocity,
-                            characterMotor.GroundingStatus.GroundNormal) * currentVelocity.magnitude;
-
-                        // Calculate target velocity
-                        Vector3 inputRight = Vector3.Cross(moveInputVector, characterMotor.CharacterUp);
-                        Vector3 reorientedInput = Vector3.Cross(characterMotor.GroundingStatus.GroundNormal,
-                            inputRight).normalized * moveInputVector.magnitude;
-                        targetMovementVelocity = reorientedInput * maxSprintSpeed;
-
-                        // Smooth movement Velocity
-                        currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
-                            1 - Mathf.Exp(-sprintMovementSharpness * deltaTime));
+                        Vector3 perpenticularObstructionNormal = Vector3.Cross(Vector3.Cross(
+                                characterMotor.CharacterUp, characterMotor.GroundingStatus.GroundNormal),
+                            characterMotor.CharacterUp).normalized;
+                        targetMovementVelocity = Vector3.ProjectOnPlane(
+                            targetMovementVelocity, perpenticularObstructionNormal);
                     }
-                    else
-                    {
-                        // Add move input
-                        if (moveInputVector.sqrMagnitude > 0f)
-                        {
-                            targetMovementVelocity = moveInputVector * maxAirMoveSpeed;
 
-                            // Prevent climbing on un-stable slopes with air movement
-                            if (characterMotor.GroundingStatus.FoundAnyGround)
-                            {
-                                Vector3 perpenticularObstructionNormal = Vector3.Cross(Vector3.Cross(
-                                        characterMotor.CharacterUp, characterMotor.GroundingStatus.GroundNormal),
-                                    characterMotor.CharacterUp).normalized;
-                                targetMovementVelocity = Vector3.ProjectOnPlane(
-                                    targetMovementVelocity, perpenticularObstructionNormal);
-                            }
-
-                            Vector3 velocityDiff =
-                                Vector3.ProjectOnPlane(targetMovementVelocity - currentVelocity, gravity);
-                            currentVelocity += velocityDiff * airAccelerationSpeed * deltaTime;
-                        }
-
-                        // Gravity
-                        currentVelocity += gravity * deltaTime;
-
-                        // Drag
-                        currentVelocity *= (1f / (1f + (drag * deltaTime)));
-                    }
-                    
-                    // Take into account additive velocity
-                    if (internalVelocityAdd.sqrMagnitude > 0f)
-                    {
-                        currentVelocity += internalVelocityAdd;
-                        internalVelocityAdd = Vector3.zero;
-                    }
-                    break;
+                    Vector3 velocityDiff =
+                        Vector3.ProjectOnPlane(targetMovementVelocity - currentVelocity, gravity);
+                    currentVelocity += velocityDiff * airAccelerationSpeed * deltaTime;
                 }
-                case CharacterState.Charging:
-                {
-                    // If we have stopped and need to cancel velocity, do it here
-                    if (mustStopVelocity)
-                    {
-                        currentVelocity = Vector3.zero;
-                        mustStopVelocity = false;
-                    }
 
-                    // When stopped, do no velocity handling except gravity
-                    if (isStopped) currentVelocity += gravity * deltaTime;
-                    else
-                    {
-                        // When charging, velocity is always constant
-                        float previousY = currentVelocity.y;
-                        currentVelocity = currentChargeVelocity;
-                        currentVelocity.y = previousY;
-                        currentVelocity += gravity * deltaTime;
-                    }
+                // Gravity
+                currentVelocity += gravity * deltaTime;
 
-                    break;
-                }
-                case CharacterState.Swimming:
-                {
-                    float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
+                // Drag
+                currentVelocity *= (1f / (1f + (drag * deltaTime)));
+            }
+        }
+
+        private void SwimmingMovementHandler(ref Vector3 currentVelocity, float deltaTime)
+        {
+            float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
 
                     // Smoothly interpolate to target swimming velocity
                     Vector3 targetMovementVelocity =
@@ -778,6 +720,63 @@ namespace ProjectTwo
                     }
 
                     currentVelocity = smoothedVelocity;
+        }
+        
+        /// This is where you tell your character what its velocity should be right now. 
+        public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
+        {
+            switch (currentCharacterState)
+            {
+                case CharacterState.Default:
+                {
+                    // Handles ground movement if has move input
+                    GroundMovementHandler(ref currentVelocity, deltaTime, stableMovementSharpness, maxStableMoveSpeed);
+
+                    // Handles jump if jump requested
+                    JumpHandler(ref currentVelocity, deltaTime);
+
+                    // Handles external forces to the character controller
+                    ExternalForceHandler(ref currentVelocity);
+                    break;
+                }
+                case CharacterState.Sprinting:
+                {
+                    // Handles ground movement if has move input
+                    GroundMovementHandler(ref currentVelocity, deltaTime, sprintMovementSharpness, maxSprintSpeed);
+
+                    // Handles jump request if has jump input
+                    if (allowJumpingWhileSprinting) JumpHandler(ref currentVelocity, deltaTime);
+                    
+                    // Handles external forces to the character controller
+                    ExternalForceHandler(ref currentVelocity);
+                    break;
+                }
+                case CharacterState.Charging:
+                {
+                    // If we have stopped and need to cancel velocity, do it here
+                    if (mustStopVelocity)
+                    {
+                        currentVelocity = Vector3.zero;
+                        mustStopVelocity = false;
+                    }
+
+                    // When stopped, do no velocity handling except gravity
+                    if (isStopped) currentVelocity += gravity * deltaTime;
+                    else
+                    {
+                        // When charging, velocity is always constant
+                        float previousY = currentVelocity.y;
+                        currentVelocity = currentChargeVelocity;
+                        currentVelocity.y = previousY;
+                        currentVelocity += gravity * deltaTime;
+                    }
+
+                    break;
+                }
+                case CharacterState.Swimming:
+                {
+                    // Handles the movement for the swimming
+                    SwimmingMovementHandler(ref currentVelocity, deltaTime);
                     break;
                 }
                 case CharacterState.Climbing:
