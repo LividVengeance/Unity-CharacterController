@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: a4a47432588f6144791486cc9cff8c3d
+guid: fd736a58bc49f7b43bb58f1524bbed9e
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable:
   - first:
       74: 1827226128182048838
-    second: Jump_Idle-Long
+    second: DoubleJump_Forward
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -21,10 +21,10 @@ ModelImporter:
     rigImportErrors: 
     rigImportWarnings: "Copied Avatar Rig Configuration mis-match. Bone length in
       copied configuration does not match position in animation file:\n\t'thigh_l'
-      : position error = 26.334080 mm\n\t'calf_l' : position error = 9.011041 mm\n\t'foot_l'
-      : position error = 8.592257 mm\n\t'ball_l' : position error = 2.209811 mm\n\t'thigh_r'
-      : position error = 11.319602 mm\n\t'calf_r' : position error = 10.231203 mm\n\t'foot_r'
-      : position error = 11.969105 mm\n\t'ball_r' : position error = 8.306018 mm\n"
+      : position error = 9.099384 mm\n\t'calf_l' : position error = 13.297376 mm\n\t'foot_l'
+      : position error = 7.060732 mm\n\t'ball_l' : position error = 2.926867 mm\n\t'thigh_r'
+      : position error = 9.569093 mm\n\t'calf_r' : position error = 19.113817 mm\n\t'foot_r'
+      : position error = 8.514048 mm\n\t'ball_r' : position error = 8.211723 mm\n"
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
@@ -82,11 +82,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Jump_Idle-Long
+      name: DoubleJump_Forward
       takeName: Take 001
       internalID: 0
       firstFrame: 0
-      lastFrame: 46
+      lastFrame: 39
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -100,7 +100,7 @@ ModelImporter:
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 0
       keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 1
+      keepOriginalPositionXZ: 0
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000

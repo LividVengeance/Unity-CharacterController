@@ -400,8 +400,6 @@ namespace ProjectTwo
             {
                 timeSinceJumpRequested = 0f;
                 jumpRequested = true;
-                
-                animator.SetTrigger("jumpTrigger");
             }
         }
 
@@ -583,15 +581,14 @@ namespace ProjectTwo
                         jumpRequested = false;
                         doubleJumpConsumed = true;
                         jumpedThisFrame = true;
+                        
+                        animator.SetTrigger("jumpTrigger");
                     }
                 }
 
                 // See if we actually are allowed to jump
-                if (canWallJump || !jumpConsumed &&
-                    ((allowJumpingWhenSliding
-                         ? characterMotor.GroundingStatus.FoundAnyGround
-                         : characterMotor.GroundingStatus.IsStableOnGround) ||
-                     timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
+                if (canWallJump || !jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround
+                         : characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
                 {
                     // Calculate jump direction before un-grounding
                     Vector3 jumpDirection = characterMotor.CharacterUp;
@@ -614,6 +611,8 @@ namespace ProjectTwo
                     jumpRequested = false;
                     jumpConsumed = true;
                     jumpedThisFrame = true;
+                    
+                    animator.SetTrigger("jumpTrigger");
                 }
 
                 // Reset wall jump
@@ -640,6 +639,8 @@ namespace ProjectTwo
             // Is on stable ground
             if (characterMotor.GroundingStatus.IsStableOnGround)
             {
+                animator.SetBool("isGrounded", true);
+                
                 // Reorient source velocity on current ground slope
                 // (this is because we don't want our smoothing to cause any velocity losses in slope changes)
                 currentVelocity = characterMotor.GetDirectionTangentToSurface(currentVelocity,
@@ -657,6 +658,8 @@ namespace ProjectTwo
             }
             else
             {
+                animator.SetBool("isGrounded", false);
+                
                 // Add move input
                 if (moveInputVector.sqrMagnitude > 0f)
                 {
@@ -689,37 +692,37 @@ namespace ProjectTwo
         {
             float verticalInput = 0f + (jumpInputIsHeld ? 1f : 0f) + (crouchInputIsHeld ? -1f : 0f);
 
-                    // Smoothly interpolate to target swimming velocity
-                    Vector3 targetMovementVelocity =
-                        (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * swimmingSpeed;
-                    Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
-                        1 - Mathf.Exp(-swimmingMovementSharpness * deltaTime));
+            // Smoothly interpolate to target swimming velocity
+            Vector3 targetMovementVelocity =
+                (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * swimmingSpeed;
+            Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
+                1 - Mathf.Exp(-swimmingMovementSharpness * deltaTime));
 
-                    /// See if our swimming reference point would be out of water after the movement from our velocity has been applied
+            /// See if our swimming reference point would be out of water after the movement from our velocity has been applied
 
-                    Vector3 resultingSwimmingReferancePosition =
-                        characterMotor.TransientPosition + (smoothedVelocity * deltaTime) +
-                        (swimmingReferencePoint.position - characterMotor.TransientPosition);
-                    Vector3 closestPointWaterSurface = Physics.ClosestPoint(resultingSwimmingReferancePosition,
-                        waterZone, waterZone.transform.position, waterZone.transform.rotation);
+            Vector3 resultingSwimmingReferancePosition =
+                characterMotor.TransientPosition + (smoothedVelocity * deltaTime) +
+                (swimmingReferencePoint.position - characterMotor.TransientPosition);
+            Vector3 closestPointWaterSurface = Physics.ClosestPoint(resultingSwimmingReferancePosition,
+                waterZone, waterZone.transform.position, waterZone.transform.rotation);
 
-                    // if our position would be outside the water surface on next update, project the velocity
-                    // on the surface normal so that it would not take us out of the water
-                    if (closestPointWaterSurface != resultingSwimmingReferancePosition)
-                    {
-                        Vector3 waterSurfaceNormal =
-                            (resultingSwimmingReferancePosition - closestPointWaterSurface).normalized;
-                        smoothedVelocity = Vector3.ProjectOnPlane(smoothedVelocity, waterSurfaceNormal);
+            // if our position would be outside the water surface on next update, project the velocity
+            // on the surface normal so that it would not take us out of the water
+            if (closestPointWaterSurface != resultingSwimmingReferancePosition)
+            {
+                Vector3 waterSurfaceNormal =
+                    (resultingSwimmingReferancePosition - closestPointWaterSurface).normalized;
+                smoothedVelocity = Vector3.ProjectOnPlane(smoothedVelocity, waterSurfaceNormal);
 
-                        // Jump out of water
-                        if (jumpRequested)
-                        {
-                            smoothedVelocity += (characterMotor.CharacterUp * jumpSpeed) - Vector3.Project(
-                                currentVelocity, characterMotor.CharacterUp);
-                        }
-                    }
+                // Jump out of water
+                if (jumpRequested)
+                {
+                    smoothedVelocity += (characterMotor.CharacterUp * jumpSpeed) - Vector3.Project(
+                        currentVelocity, characterMotor.CharacterUp);
+                }
+            }
 
-                    currentVelocity = smoothedVelocity;
+            currentVelocity = smoothedVelocity;
         }
         
         /// This is where you tell your character what its velocity should be right now. 
@@ -897,7 +900,7 @@ namespace ProjectTwo
                 {
                     Vector3 characterRelativeVelocity = transform.InverseTransformVector(characterMotor.Velocity);
                     // Animation
-                    animator.SetFloat("velocityZ", characterRelativeVelocity.z / maxStableMoveSpeed);
+                    animator.SetFloat("velocityZ", (characterRelativeVelocity.z / maxStableMoveSpeed));
                     animator.SetFloat("velocityX", characterRelativeVelocity.x / maxStableMoveSpeed);
                     
                     // Handle jumping pre-ground grace period
