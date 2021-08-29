@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 415d153d7390bcb42b3c05e0a996b822
+guid: 8c0acfda9a27ded43a44d49419dd686c
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable:
   - first:
       74: 1827226128182048838
-    second: DoubleJump_Roll_Forward
+    second: Double Jump
   externalObjects: {}
   materials:
     materialImportMode: 2
@@ -21,10 +21,10 @@ ModelImporter:
     rigImportErrors: 
     rigImportWarnings: "Copied Avatar Rig Configuration mis-match. Bone length in
       copied configuration does not match position in animation file:\n\t'thigh_l'
-      : position error = 6.793569 mm\n\t'calf_l' : position error = 13.858287 mm\n\t'foot_l'
-      : position error = 7.964367 mm\n\t'ball_l' : position error = 2.680080 mm\n\t'thigh_r'
-      : position error = 7.015228 mm\n\t'calf_r' : position error = 11.480709 mm\n\t'foot_r'
-      : position error = 10.352436 mm\n\t'ball_r' : position error = 2.776729 mm\n"
+      : position error = 9.099412 mm\n\t'calf_l' : position error = 13.297276 mm\n\t'foot_l'
+      : position error = 7.060801 mm\n\t'ball_l' : position error = 2.926847 mm\n\t'thigh_r'
+      : position error = 9.569130 mm\n\t'calf_r' : position error = 19.113884 mm\n\t'foot_r'
+      : position error = 8.514013 mm\n\t'ball_r' : position error = 8.211738 mm\n"
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
       might lower retargeting quality:\nNote: Activate translation DOF on avatar
@@ -82,11 +82,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: DoubleJump_Roll_Forward
+      name: Double Jump
       takeName: Take 001
       internalID: 0
       firstFrame: 0
-      lastFrame: 46
+      lastFrame: 21
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -98,9 +98,9 @@ ModelImporter:
       loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
-      keepOriginalOrientation: 0
+      keepOriginalOrientation: 1
       keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
+      keepOriginalPositionXZ: 1
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000

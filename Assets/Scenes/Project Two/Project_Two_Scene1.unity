@@ -603,12 +603,6 @@ Transform:
   m_Father: {fileID: 223427871}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!95 &656267417 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 4411023222561602284, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-    type: 3}
-  m_PrefabInstance: {fileID: 657526107}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &657526107
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -616,65 +610,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1921050793181487588, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.561
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: animator
-      value: 
-      objectReference: {fileID: 656267417}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: inputHandler
-      value: 
-      objectReference: {fileID: 1128871951}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: maxSprintSpeed
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: maxAirMoveSpeed
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: characterSettings
-      value: 
-      objectReference: {fileID: 854821107}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: maxStableMoveSpeed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: airAccelerationSpeed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: orientationSharpness
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: rotateToCameraFacing
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: allowWallJump
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: stableMovementSharpness
-      value: 10
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: allowDoubleJump
+      value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-        type: 3}
-      propertyPath: swimmingMovementSharpness
-      value: 100
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: jumpPreGroundingGraceTime
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: jumpPostGroundingGraceTime
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
@@ -684,17 +634,17 @@ PrefabInstance:
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -16.91
+      value: -11.78
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.3776484
+      value: 10.62
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5.7
+      value: -5.29
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
@@ -738,74 +688,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
---- !u!1 &854821105 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1921050793316649541, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-    type: 3}
-  m_PrefabInstance: {fileID: 657526107}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &854821107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 854821105}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f60de4c25fe30747b9f778d745d7832, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxStableMoveSpeed: 10
-  stableMovementSharpness: 15
-  orientationSharpness: 10
-  maxSprintSpeed: 20
-  sprintMovementSharpness: 5
-  sprintOrientationSharpness: 2
-  allowJumpingWhileSprinting: 1
-  maxAirMoveSpeed: 10
-  airAccelerationSpeed: 5
-  drag: 0.1
-  allowJumpingWhenSliding: 0
-  allowDoubleJump: 0
-  allowWallJump: 0
-  jumpSpeed: 10
-  jumpPreGroundingGraceTime: 0
-  jumpPostGroundingGraceTime: 0
-  chargeSpeed: 15
-  maxChargeTime: 1.5
-  stoppedTime: 1
-  swimmingReferencePoint: {fileID: 1648195965}
-  waterLayer:
-    serializedVersion: 2
-    m_Bits: 16
-  swimmingSpeed: 4
-  swimmingMovementSharpness: 3
-  climbingSpeed: 4
-  anchoringDuration: 0.25
-  interactionLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  noClipMoveSpeed: 10
-  noClipSharpness: 15
-  orientTowardsGravity: 0
-  gravity: {x: 0, y: -30, z: 0}
-  meshRoot: {fileID: 2143770190}
-  ignoredLayers:
-  - Ignore Collider
-  playSpawnAnimation: 1
---- !u!114 &1128871951 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1921050794510363956, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-    type: 3}
-  m_PrefabInstance: {fileID: 657526107}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 265b5798a218d024294b43a11bad768f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1156815641
 GameObject:
   m_ObjectHideFlags: 0
@@ -996,12 +878,101 @@ Transform:
   m_Father: {fileID: 223427871}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1648195965 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2014016116, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-    type: 3}
-  m_PrefabInstance: {fileID: 657526107}
+--- !u!1 &1644899325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1644899329}
+  - component: {fileID: 1644899328}
+  - component: {fileID: 1644899327}
+  - component: {fileID: 1644899326}
+  m_Layer: 0
+  m_Name: Cube
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &1644899326
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644899325}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1644899327
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644899325}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1644899328
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644899325}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1644899329
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1644899325}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.2696217, y: 15.86, z: -0.8062543}
+  m_LocalScale: {x: 5.9948, y: 1, z: 5.6543}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1872532753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1287,9 +1258,3 @@ Transform:
   m_Father: {fileID: 223427871}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!4 &2143770190 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1921050794510363957, guid: 510cd73c6534d8c4ea378f0d441dfe57,
-    type: 3}
-  m_PrefabInstance: {fileID: 657526107}
-  m_PrefabAsset: {fileID: 0}

@@ -508,6 +508,7 @@ namespace ProjectTwo
                         doubleJumpConsumed = true;
                         jumpedThisFrame = true;
                         
+                        Debug.Log("Jump");
                         animator.SetTrigger("jumpTrigger");
                     }
                 }
