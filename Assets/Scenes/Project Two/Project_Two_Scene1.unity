@@ -626,6 +626,11 @@ PrefabInstance:
       propertyPath: jumpPostGroundingGraceTime
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+        type: 3}
+      propertyPath: rotateToCameraFacing
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: m_RootOrder
