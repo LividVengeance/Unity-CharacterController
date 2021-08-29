@@ -44,92 +44,18 @@ namespace ProjectTwo
     public class CharacterController : MonoBehaviour, ICharacterController
     {
         public KinematicCharacterMotor characterMotor;
+        public CharacterSettings characterSettings;
 
-        [Header("Stable Movement")] [SerializeField, Tooltip("Maximum speed the character can run on stable ground")]
-        private float maxStableMoveSpeed = 10f;
-        [SerializeField, Tooltip("How quickly the character will come to a stop after no movement input")]
-        private float stableMovementSharpness = 15;
-        [SerializeField, Tooltip("How quickly the character will rotate")]
-        private float orientationSharpness = 10;
-
-        [Header("Sprint")]
-        [SerializeField, Tooltip("Maximum run speed when in the sprint state")]
-        private float maxSprintSpeed = 20f;
-        [SerializeField, Tooltip("How quickly the character will come to a stop after no movement input " +
-                                 "when in the sprint state")]
-        private float sprintMovementSharpness = 5;
-        [SerializeField, Tooltip("How quickly the character will rotate when in the sprint state")]
-        private float sprintOrientationSharpness = 2;
-        [SerializeField, Tooltip("Allow jumping while in the sprinting state")]
-        private bool allowJumpingWhileSprinting = true;
-
-        [Header("Air Movement")] [SerializeField, Tooltip("Maximum speed the character can move when in the air")]
-        private float maxAirMoveSpeed = 10f;
-        [SerializeField, Tooltip("How quickly the character will accelerate when in the air")]
-        private float airAccelerationSpeed = 5f;
-        [SerializeField, Tooltip("The amount of drag force the character will experience when in the air")]
-        private float drag = 0.1f;
-
-        [Header("Jumping")]
-        [SerializeField, Tooltip("Will allow the character to jump when sliding down a sharp incline")]
-        private bool allowJumpingWhenSliding = false;
-        [SerializeField, Tooltip("Will allow the character to preform a second jump when in the air")]
-        private bool allowDoubleJump = false;
-        [SerializeField, Tooltip("Will allow the character to jump off a wall")]
-        private bool allowWallJump = false;
-        [SerializeField, Tooltip("How quickly the character will move upward. This will dictate jump height")]
-        private float jumpSpeed = 10f;
-        [SerializeField, Tooltip("Time before landing where jump input will still allow jump once you land")]
-        private float jumpPreGroundingGraceTime = 0f;
-        [SerializeField, Tooltip("Time after leaving stable ground where jump will still be allowed")]
-        private float jumpPostGroundingGraceTime = 0f;
-
-        [Header("Charging")] [SerializeField, Tooltip("How fast the character will move in the charge state")]
-        private float chargeSpeed = 15f;
-        [SerializeField, Tooltip("Maximum time character can be in the charge state")]
-        private float maxChargeTime = 1.5f;
-        [SerializeField, Tooltip("Time the character will remain unable to move at end of charge state")]
-        private float stoppedTime = 1f;
-
-        [Header("Swimming")] [SerializeField, Tooltip("Point used to determine if character is in water")]
-        private Transform swimmingReferencePoint;
-        [SerializeField, Tooltip("Layer character will use to determine if in water")]
-        private LayerMask waterLayer;
-        [SerializeField, Tooltip("How quickly the character can move when in water")]
-        private float swimmingSpeed = 4f;
-        [SerializeField, Tooltip("How quickly the character will come to a stop after no movement input when " +
-                                 "in the swimming state")]
-        private float swimmingMovementSharpness = 3;
-
-        [Header("Ladder Climbing")] [SerializeField]
-        private float climbingSpeed = 4f;
-        [SerializeField] private float anchoringDuration = 0.25f;
-        [SerializeField] private LayerMask interactionLayer;
-
-        [Header("No Clip")] [SerializeField, Tooltip("How fast the character will move in the no clip state")]
-        private float noClipMoveSpeed = 10f;
-        [SerializeField, Tooltip("How quickly the character will come to a stop when in the NoClip state")]
-        private float noClipSharpness = 15;
-
-        [Header("Misc")]
-        [SerializeField, Tooltip("Always orient its up direction in the opposite direction of the gravity")]
-        private bool orientTowardsGravity;
-        [SerializeField] private Vector3 gravity = new Vector3(0, -30f, 0);
-        [SerializeField] private Transform meshRoot;
-        [SerializeField, Tooltip("Ignore physics collision on these layers")]
-        List<string> ignoredLayers = new List<string>();
-
-        [Header("Camera")] [SerializeField, Tooltip("Will have the character face camera look direction")]
+        [Header("Camera")] 
+        [SerializeField, Tooltip("Will have the character face camera look direction")]
         private bool rotateToCameraFacing = true;
 
-        [Header("Inputs")] [SerializeField] private InputHandler inputHandler;
+        [Header("Inputs")] 
+        [SerializeField] private InputHandler inputHandler;
         
         [Header("Animations")] 
         [SerializeField, Tooltip("Animation controller the characters model is using")]
         private Animator animator;
-        [SerializeField, Tooltip("Play Spawn in animation. Note this will disable character inputs " +
-                                 "still animation has finished")]
-        private bool playSpawnAnimation = true;
 
         // Character state
         public CharacterState currentCharacterState { get; private set; }
@@ -204,7 +130,7 @@ namespace ProjectTwo
             // Sets the initial state
             TransitionToState(CharacterState.Default);
 
-            if (playSpawnAnimation) StartCoroutine(SpawnAnimationStopInputs());
+            if (characterSettings.playSpawnAnimation) StartCoroutine(SpawnAnimationStopInputs());
         }
 
         private IEnumerator SpawnAnimationStopInputs()
@@ -247,7 +173,7 @@ namespace ProjectTwo
                 case CharacterState.Charging:
                 {
                     // Cache a charging velocity based on the character’s forward direction
-                    currentChargeVelocity = characterMotor.CharacterForward * chargeSpeed;
+                    currentChargeVelocity = characterMotor.CharacterForward * characterSettings.chargeSpeed;
 
                     // Setup values
                     isStopped = false;
@@ -338,7 +264,7 @@ namespace ProjectTwo
             if (inputs.InteractDown)
             {
                 if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation,
-                    probedColliders, interactionLayer, QueryTriggerInteraction.Collide) > 0)
+                    probedColliders, characterSettings.interactionLayer, QueryTriggerInteraction.Collide) > 0)
                 {
                     if (probedColliders[0] != null)
                     {
@@ -387,7 +313,7 @@ namespace ProjectTwo
                 {
                     isCrouching = true;
                     characterMotor.SetCapsuleDimensions(0.5f, 1f, 0.5f);
-                    meshRoot.localScale = new Vector3(1f, 0.5f, 1f);
+                    characterSettings.meshRoot.localScale = new Vector3(1f, 0.5f, 1f);
                 }
             }
             else if (inputs.CrouchUp) shouldBeCrouching = false;
@@ -502,10 +428,10 @@ namespace ProjectTwo
                 currentRotation = Quaternion.LookRotation(smoothedLookInputDirection,
                     characterMotor.CharacterUp);
 
-                if (orientTowardsGravity)
+                if (characterSettings.orientTowardsGravity)
                 {
                     // Rotate from current up to invert gravity
-                    currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -gravity) *
+                    currentRotation = Quaternion.FromToRotation((currentRotation * Vector3.up), -characterSettings.gravity) *
                                       currentRotation;
                 }
             }
@@ -518,12 +444,12 @@ namespace ProjectTwo
             {
                 case CharacterState.Default:
                 {
-                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
+                    CharacterRotation(ref currentRotation, deltaTime, characterSettings.orientationSharpness);
                     break;
                 }
                 case CharacterState.Sprinting:
                 {
-                    CharacterRotation(ref currentRotation, deltaTime, sprintOrientationSharpness);
+                    CharacterRotation(ref currentRotation, deltaTime, characterSettings.sprintOrientationSharpness);
                     break;
                 }
                 case CharacterState.Charging:
@@ -532,7 +458,7 @@ namespace ProjectTwo
                 }
                 case CharacterState.Swimming:
                 {
-                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
+                    CharacterRotation(ref currentRotation, deltaTime, characterSettings.orientationSharpness);
                     break;
                 }
                 case CharacterState.Climbing:
@@ -545,7 +471,7 @@ namespace ProjectTwo
                         case ClimbingState.Anchoring:
                         case ClimbingState.DeAnchoring:
                             currentRotation = Quaternion.Slerp(anchoringStartRotation,
-                                ladderTargetRotation, (anchoringTimer / anchoringDuration));
+                                ladderTargetRotation, (anchoringTimer / characterSettings.anchoringDuration));
                             break;
                     }
 
@@ -553,7 +479,7 @@ namespace ProjectTwo
                 }
                 case CharacterState.NoClip:
                 {
-                    CharacterRotation(ref currentRotation, deltaTime, orientationSharpness);
+                    CharacterRotation(ref currentRotation, deltaTime, characterSettings.orientationSharpness);
                     break;
                 }
             }
@@ -567,16 +493,16 @@ namespace ProjectTwo
             if (jumpRequested)
             {
                 // Handle double jump
-                if (allowDoubleJump)
+                if (characterSettings.allowDoubleJump)
                 {
-                    if (jumpConsumed && !doubleJumpConsumed && (allowJumpingWhenSliding
+                    if (jumpConsumed && !doubleJumpConsumed && (characterSettings.allowJumpingWhenSliding
                         ? !characterMotor.GroundingStatus.FoundAnyGround
                         : !characterMotor.GroundingStatus.IsStableOnGround))
                     {
                         characterMotor.ForceUnground(0.1f);
 
                         // Add to the return velocity and reset jump state
-                        currentVelocity += (characterMotor.CharacterUp * jumpSpeed) -
+                        currentVelocity += (characterMotor.CharacterUp * characterSettings.jumpSpeed) -
                                            Vector3.Project(currentVelocity, characterMotor.CharacterUp);
                         jumpRequested = false;
                         doubleJumpConsumed = true;
@@ -587,8 +513,8 @@ namespace ProjectTwo
                 }
 
                 // See if we actually are allowed to jump
-                if (canWallJump || !jumpConsumed && ((allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround
-                         : characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= jumpPostGroundingGraceTime))
+                if (canWallJump || !jumpConsumed && ((characterSettings.allowJumpingWhenSliding ? characterMotor.GroundingStatus.FoundAnyGround
+                         : characterMotor.GroundingStatus.IsStableOnGround) || timeSinceLastAbleToJump <= characterSettings.jumpPostGroundingGraceTime))
                 {
                     // Calculate jump direction before un-grounding
                     Vector3 jumpDirection = characterMotor.CharacterUp;
@@ -606,7 +532,7 @@ namespace ProjectTwo
                     characterMotor.ForceUnground(0.1f);
 
                     // Add to the return velocity and reset jump state
-                    currentVelocity += (jumpDirection * jumpSpeed) -
+                    currentVelocity += (jumpDirection * characterSettings.jumpSpeed) -
                                        Vector3.Project(currentVelocity, characterMotor.CharacterUp);
                     jumpRequested = false;
                     jumpConsumed = true;
@@ -663,7 +589,7 @@ namespace ProjectTwo
                 // Add move input
                 if (moveInputVector.sqrMagnitude > 0f)
                 {
-                    targetMovementVelocity = moveInputVector * maxAirMoveSpeed;
+                    targetMovementVelocity = moveInputVector * characterSettings.maxAirMoveSpeed;
 
                     // Prevent climbing on un-stable slopes with air movement
                     if (characterMotor.GroundingStatus.FoundAnyGround)
@@ -676,15 +602,15 @@ namespace ProjectTwo
                     }
 
                     Vector3 velocityDiff =
-                        Vector3.ProjectOnPlane(targetMovementVelocity - currentVelocity, gravity);
-                    currentVelocity += velocityDiff * airAccelerationSpeed * deltaTime;
+                        Vector3.ProjectOnPlane(targetMovementVelocity - currentVelocity, characterSettings.gravity);
+                    currentVelocity += velocityDiff * characterSettings.airAccelerationSpeed * deltaTime;
                 }
 
                 // Gravity
-                currentVelocity += gravity * deltaTime;
+                currentVelocity += characterSettings.gravity * deltaTime;
 
                 // Drag
-                currentVelocity *= (1f / (1f + (drag * deltaTime)));
+                currentVelocity *= (1f / (1f + (characterSettings.drag * deltaTime)));
             }
         }
 
@@ -694,15 +620,15 @@ namespace ProjectTwo
 
             // Smoothly interpolate to target swimming velocity
             Vector3 targetMovementVelocity =
-                (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * swimmingSpeed;
+                (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * characterSettings.swimmingSpeed;
             Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
-                1 - Mathf.Exp(-swimmingMovementSharpness * deltaTime));
+                1 - Mathf.Exp(-characterSettings.swimmingMovementSharpness * deltaTime));
 
             /// See if our swimming reference point would be out of water after the movement from our velocity has been applied
 
             Vector3 resultingSwimmingReferancePosition =
                 characterMotor.TransientPosition + (smoothedVelocity * deltaTime) +
-                (swimmingReferencePoint.position - characterMotor.TransientPosition);
+                (characterSettings.swimmingReferencePoint.position - characterMotor.TransientPosition);
             Vector3 closestPointWaterSurface = Physics.ClosestPoint(resultingSwimmingReferancePosition,
                 waterZone, waterZone.transform.position, waterZone.transform.rotation);
 
@@ -717,7 +643,7 @@ namespace ProjectTwo
                 // Jump out of water
                 if (jumpRequested)
                 {
-                    smoothedVelocity += (characterMotor.CharacterUp * jumpSpeed) - Vector3.Project(
+                    smoothedVelocity += (characterMotor.CharacterUp * characterSettings.jumpSpeed) - Vector3.Project(
                         currentVelocity, characterMotor.CharacterUp);
                 }
             }
@@ -733,7 +659,7 @@ namespace ProjectTwo
                 case CharacterState.Default:
                 {
                     // Handles ground movement if has move input
-                    GroundMovementHandler(ref currentVelocity, deltaTime, stableMovementSharpness, maxStableMoveSpeed);
+                    GroundMovementHandler(ref currentVelocity, deltaTime, characterSettings.stableMovementSharpness, characterSettings.maxStableMoveSpeed);
 
                     // Handles jump if jump requested
                     JumpHandler(ref currentVelocity, deltaTime);
@@ -745,10 +671,10 @@ namespace ProjectTwo
                 case CharacterState.Sprinting:
                 {
                     // Handles ground movement if has move input
-                    GroundMovementHandler(ref currentVelocity, deltaTime, sprintMovementSharpness, maxSprintSpeed);
+                    GroundMovementHandler(ref currentVelocity, deltaTime, characterSettings.sprintMovementSharpness, characterSettings.maxSprintSpeed);
 
                     // Handles jump request if has jump input
-                    if (allowJumpingWhileSprinting) JumpHandler(ref currentVelocity, deltaTime);
+                    if (characterSettings.allowJumpingWhileSprinting) JumpHandler(ref currentVelocity, deltaTime);
                     
                     // Handles external forces to the character controller
                     ExternalForceHandler(ref currentVelocity);
@@ -764,14 +690,14 @@ namespace ProjectTwo
                     }
 
                     // When stopped, do no velocity handling except gravity
-                    if (isStopped) currentVelocity += gravity * deltaTime;
+                    if (isStopped) currentVelocity += characterSettings.gravity * deltaTime;
                     else
                     {
                         // When charging, velocity is always constant
                         float previousY = currentVelocity.y;
                         currentVelocity = currentChargeVelocity;
                         currentVelocity.y = previousY;
-                        currentVelocity += gravity * deltaTime;
+                        currentVelocity += characterSettings.gravity * deltaTime;
                     }
 
                     break;
@@ -790,12 +716,12 @@ namespace ProjectTwo
                     {
                         case ClimbingState.Climbing:
                             currentVelocity = (ladderUpDownInput * activeLadder.transform.up).normalized *
-                                              climbingSpeed;
+                                              characterSettings.climbingSpeed;
                             break;
                         case ClimbingState.Anchoring:
                         case ClimbingState.DeAnchoring:
                             Vector3 tmpPosition = Vector3.Lerp(anchoringStartPosition, ladderTargetPosition,
-                                (anchoringTimer / anchoringDuration));
+                                (anchoringTimer / characterSettings.anchoringDuration));
                             currentVelocity = characterMotor.GetVelocityForMovePosition(
                                 characterMotor.TransientPosition, tmpPosition, deltaTime);
                             break;
@@ -809,9 +735,9 @@ namespace ProjectTwo
 
                     // Smoothly interpolate to target velocity
                     Vector3 targetMovementVelocity =
-                        (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * noClipMoveSpeed;
+                        (moveInputVector + (characterMotor.CharacterUp * verticalInput)).normalized * characterSettings.noClipMoveSpeed;
                     currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
-                        1 - Mathf.Exp(-noClipSharpness * deltaTime));
+                        1 - Mathf.Exp(-characterSettings.noClipSharpness * deltaTime));
                     break;
                 }
             }
@@ -822,15 +748,15 @@ namespace ProjectTwo
         {
             // Do a character overlap test to detect water surfaces
             if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation,
-                probedColliders, waterLayer, QueryTriggerInteraction.Collide) > 0)
+                probedColliders, characterSettings.waterLayer, QueryTriggerInteraction.Collide) > 0)
             {
                 // If a water surface was detected
                 if (probedColliders[0] != null)
                 {
                     // If the swimming reference point is inside the box, make sure we are in swimming state
-                    if (Physics.ClosestPoint(swimmingReferencePoint.position, probedColliders[0],
+                    if (Physics.ClosestPoint(characterSettings.swimmingReferencePoint.position, probedColliders[0],
                             probedColliders[0].transform.position, probedColliders[0].transform.rotation) ==
-                        swimmingReferencePoint.position)
+                        characterSettings.swimmingReferencePoint.position)
                     {
                         if (currentCharacterState == CharacterState.Default)
                         {
@@ -900,14 +826,14 @@ namespace ProjectTwo
                 {
                     Vector3 characterRelativeVelocity = transform.InverseTransformVector(characterMotor.Velocity);
                     // Animation
-                    animator.SetFloat("velocityZ", (characterRelativeVelocity.z / maxStableMoveSpeed));
-                    animator.SetFloat("velocityX", characterRelativeVelocity.x / maxStableMoveSpeed);
+                    animator.SetFloat("velocityZ", (characterRelativeVelocity.z / characterSettings.maxStableMoveSpeed));
+                    animator.SetFloat("velocityX", characterRelativeVelocity.x / characterSettings.maxStableMoveSpeed);
                     
                     // Handle jumping pre-ground grace period
-                    if (jumpRequested && timeSinceJumpRequested > jumpPreGroundingGraceTime) jumpRequested = false;
+                    if (jumpRequested && timeSinceJumpRequested > characterSettings.jumpPreGroundingGraceTime) jumpRequested = false;
 
                     // Handle jumping while sliding
-                    if (allowJumpingWhenSliding
+                    if (characterSettings.allowJumpingWhenSliding
                         ? characterMotor.GroundingStatus.FoundAnyGround
                         : characterMotor.GroundingStatus.IsStableOnGround)
                     {
@@ -939,7 +865,7 @@ namespace ProjectTwo
                         else
                         {
                             // If no obstructions, un-crouch
-                            meshRoot.localScale = new Vector3(1f, 1f, 1f);
+                            characterSettings.meshRoot.localScale = new Vector3(1f, 1f, 1f);
                             isCrouching = false;
                         }
                     }
@@ -957,14 +883,14 @@ namespace ProjectTwo
                 case CharacterState.Charging:
                 {
                     // Detect being stopped by elapsed time
-                    if (!isStopped && timeSinceStartedCharge > maxChargeTime)
+                    if (!isStopped && timeSinceStartedCharge > characterSettings.maxChargeTime)
                     {
                         mustStopVelocity = true;
                         isStopped = true;
                     }
 
                     // Detect end of stopping phase and transition back to default movement state
-                    if (timeSinceStopped > stoppedTime) TransitionToState(CharacterState.Default);
+                    if (timeSinceStopped > characterSettings.stoppedTime) TransitionToState(CharacterState.Default);
 
                     break;
                 }
@@ -998,7 +924,7 @@ namespace ProjectTwo
                         case ClimbingState.Anchoring:
                         case ClimbingState.DeAnchoring:
                             // Detect transitioning out from anchoring states
-                            if (anchoringTimer >= anchoringDuration)
+                            if (anchoringTimer >= characterSettings.anchoringDuration)
                             {
                                 if (climbingState == ClimbingState.Anchoring)
                                 {
@@ -1025,7 +951,7 @@ namespace ProjectTwo
         {
             string collLayer = LayerMask.LayerToName(coll.gameObject.layer);
             // Checks if layer is in ignore list
-            if (ignoredLayers.Contains(collLayer)) return false;
+            if (characterSettings.ignoredLayers.Contains(collLayer)) return false;
 
             return true;
         }
@@ -1043,7 +969,7 @@ namespace ProjectTwo
                 case CharacterState.Default:
                 {
                     // We can wall jump only if we are not stable on ground and are moving against an obstruction
-                    if (allowWallJump && !characterMotor.GroundingStatus.IsStableOnGround &&
+                    if (characterSettings.allowWallJump && !characterMotor.GroundingStatus.IsStableOnGround &&
                         !hitStabilityReport.IsStable)
                     {
                         canWallJump = true;
@@ -1080,6 +1006,7 @@ namespace ProjectTwo
         private void OnLanded()
         {
             Debug.Log("Landed");
+            animator.SetTrigger("hasLanded");
         }
 
         private void OnLeaveStableGround()

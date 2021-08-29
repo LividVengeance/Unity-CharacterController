@@ -643,6 +643,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
+      propertyPath: characterSettings
+      value: 
+      objectReference: {fileID: 854821107}
+    - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+        type: 3}
       propertyPath: maxStableMoveSpeed
       value: 5
       objectReference: {fileID: 0}
@@ -733,6 +738,62 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+--- !u!1 &854821105 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1921050793316649541, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+    type: 3}
+  m_PrefabInstance: {fileID: 657526107}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &854821107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 854821105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f60de4c25fe30747b9f778d745d7832, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxStableMoveSpeed: 10
+  stableMovementSharpness: 15
+  orientationSharpness: 10
+  maxSprintSpeed: 20
+  sprintMovementSharpness: 5
+  sprintOrientationSharpness: 2
+  allowJumpingWhileSprinting: 1
+  maxAirMoveSpeed: 10
+  airAccelerationSpeed: 5
+  drag: 0.1
+  allowJumpingWhenSliding: 0
+  allowDoubleJump: 0
+  allowWallJump: 0
+  jumpSpeed: 10
+  jumpPreGroundingGraceTime: 0
+  jumpPostGroundingGraceTime: 0
+  chargeSpeed: 15
+  maxChargeTime: 1.5
+  stoppedTime: 1
+  swimmingReferencePoint: {fileID: 1648195965}
+  waterLayer:
+    serializedVersion: 2
+    m_Bits: 16
+  swimmingSpeed: 4
+  swimmingMovementSharpness: 3
+  climbingSpeed: 4
+  anchoringDuration: 0.25
+  interactionLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  noClipMoveSpeed: 10
+  noClipSharpness: 15
+  orientTowardsGravity: 0
+  gravity: {x: 0, y: -30, z: 0}
+  meshRoot: {fileID: 2143770190}
+  ignoredLayers:
+  - Ignore Collider
+  playSpawnAnimation: 1
 --- !u!114 &1128871951 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1921050794510363956, guid: 510cd73c6534d8c4ea378f0d441dfe57,
@@ -935,6 +996,12 @@ Transform:
   m_Father: {fileID: 223427871}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1648195965 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2014016116, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+    type: 3}
+  m_PrefabInstance: {fileID: 657526107}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1872532753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1220,3 +1287,9 @@ Transform:
   m_Father: {fileID: 223427871}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+--- !u!4 &2143770190 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1921050794510363957, guid: 510cd73c6534d8c4ea378f0d441dfe57,
+    type: 3}
+  m_PrefabInstance: {fileID: 657526107}
+  m_PrefabAsset: {fileID: 0}

@@ -54,7 +54,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1921050793181487589}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.561, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1921050794510363957}
@@ -163,42 +163,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterMotor: {fileID: 1921050793276241502}
-  maxStableMoveSpeed: 10
-  stableMovementSharpness: 15
-  orientationSharpness: 10
-  maxAirMoveSpeed: 10
-  airAccelerationSpeed: 5
-  drag: 0.1
-  allowJumpingWhenSliding: 0
-  allowDoubleJump: 1
-  allowWallJump: 1
-  jumpSpeed: 10
-  jumpPreGroundingGraceTime: 0
-  jumpPostGroundingGraceTime: 0
-  chargeSpeed: 15
-  maxChargeTime: 1.5
-  stoppedTime: 0.75
-  swimmingReferencePoint: {fileID: 2014016116}
-  waterLayer:
-    serializedVersion: 2
-    m_Bits: 16
-  swimmingSpeed: 4
-  swimmingMovementSharpness: 3
-  swimmingOrientationSharpness: 2
-  climbingSpeed: 4
-  anchoringDuration: 0.25
-  interactionLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  noClipMoveSpeed: 10
-  noClipSharpness: 15
-  orientTowardsGravity: 1
-  rotationObstruction: 0
-  gravity: {x: 0, y: -30, z: 0}
-  meshRoot: {fileID: 1921050794510363957}
-  ignoredLayers:
-  - Ignore Collider
+  characterSettings: {fileID: 854821107}
   rotateToCameraFacing: 1
+  inputHandler: {fileID: 1921050794510363956}
+  animator: {fileID: 4411023222561602284}
 --- !u!1 &1921050793316649541
 GameObject:
   m_ObjectHideFlags: 0
@@ -208,6 +176,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1921050793316649540}
+  - component: {fileID: 854821107}
   m_Layer: 0
   m_Name: PlayerCharacter
   m_TagString: Untagged
@@ -231,6 +200,56 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &854821107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1921050793316649541}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f60de4c25fe30747b9f778d745d7832, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxStableMoveSpeed: 10
+  stableMovementSharpness: 15
+  orientationSharpness: 10
+  maxSprintSpeed: 20
+  sprintMovementSharpness: 5
+  sprintOrientationSharpness: 2
+  allowJumpingWhileSprinting: 1
+  maxAirMoveSpeed: 10
+  airAccelerationSpeed: 5
+  drag: 0.1
+  allowJumpingWhenSliding: 0
+  allowDoubleJump: 0
+  allowWallJump: 0
+  jumpSpeed: 10
+  jumpPreGroundingGraceTime: 0
+  jumpPostGroundingGraceTime: 0
+  chargeSpeed: 15
+  maxChargeTime: 1.5
+  stoppedTime: 1
+  swimmingReferencePoint: {fileID: 2014016116}
+  waterLayer:
+    serializedVersion: 2
+    m_Bits: 16
+  swimmingSpeed: 4
+  swimmingMovementSharpness: 3
+  climbingSpeed: 4
+  anchoringDuration: 0.25
+  interactionLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  noClipMoveSpeed: 10
+  noClipSharpness: 15
+  orientTowardsGravity: 0
+  gravity: {x: 0, y: -30, z: 0}
+  meshRoot: {fileID: 1921050794510363957}
+  ignoredLayers:
+  - Ignore Collider
+  playSpawnAnimation: 1
 --- !u!1 &1921050794510363958
 GameObject:
   m_ObjectHideFlags: 0
