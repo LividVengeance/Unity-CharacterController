@@ -625,7 +625,7 @@ namespace ProjectTwo
             Vector3 smoothedVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity,
                 1 - Mathf.Exp(-characterSettings.swimmingMovementSharpness * deltaTime));
 
-            /// See if our swimming reference point would be out of water after the movement from our velocity has been applied
+            // See if our swimming reference point would be out of water after the movement from our velocity has been applied
 
             Vector3 resultingSwimmingReferancePosition =
                 characterMotor.TransientPosition + (smoothedVelocity * deltaTime) +

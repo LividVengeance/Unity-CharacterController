@@ -629,7 +629,7 @@ PrefabInstance:
     - target: {fileID: 1921050793276241503, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
       propertyPath: rotateToCameraFacing
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}
