@@ -33,7 +33,11 @@ namespace ProjectTwo
         }
 
         // Update is called once per frame
-        void Update() => HandleCharacterInput();
+        void Update()
+        {
+            HandleCharacterInput();
+        }
+            
         private void LateUpdate() => HandleCameraInput();
 
         private void HandleCharacterInput()
