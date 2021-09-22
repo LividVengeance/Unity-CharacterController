@@ -100,7 +100,7 @@ namespace ProjectTwo
             SCR_Default_CS defaultCS = new SCR_Default_CS(characterMotor, this);
             SCR_Sprint_CS sprintCS = new SCR_Sprint_CS(characterMotor, this);
             SCR_Charge_CS chargeCS = new SCR_Charge_CS(characterMotor, this);
-            //SCR_Swimming_CS swimmingCS = new SCR_Swimming_CS(characterMotor, this);
+            SCR_Swimming_CS swimmingCS = new SCR_Swimming_CS(characterMotor, this);
             SCR_NoClip_CS noClipCS = new SCR_NoClip_CS(characterMotor, this);
 
             // Sprint State Transitions
@@ -115,6 +115,9 @@ namespace ProjectTwo
             At(noClipCS, defaultCS, HasNoClipInput());
             At(defaultCS, noClipCS, HasNoClipInput());
             
+            // Swimming State Transitions
+            characterStateMachine.AddAnyTransition(swimmingCS, WaterOverlapCheck);
+            At(swimmingCS, defaultCS, NoWaterOverlap());
 
             void At(IState to, IState from, Func<bool> condition) => characterStateMachine.AddTransition(to, from, condition);
             // State Transition Checks
@@ -123,6 +126,7 @@ namespace ProjectTwo
             Func<bool> ChargePressed() => () => isChargeDown;
             Func<bool> HasFinishedCharging() => () => hasFinishedCharge;
             Func<bool> HasNoClipInput() => () => isNoClipInput;
+            Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
 
             // Setting the starting state
             characterStateMachine.SetState(defaultCS);
@@ -333,34 +337,7 @@ namespace ProjectTwo
         {
             characterStateMachine.GetCurrentState.StateBeforeCharacterUpdate(deltaTime);
             
-            //// Do a character overlap test to detect water surfaces
-            //if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation,
-            //    probedColliders, characterSettings.waterLayer, QueryTriggerInteraction.Collide) > 0)
-            //{
-            //    // If a water surface was detected
-            //    if (probedColliders[0] != null)
-            //    {
-            //        // If the swimming reference point is inside the box, make sure we are in swimming state
-            //        if (Physics.ClosestPoint(characterSettings.swimmingReferencePoint.position, probedColliders[0],
-            //                probedColliders[0].transform.position, probedColliders[0].transform.rotation) ==
-            //            characterSettings.swimmingReferencePoint.position)
-            //        {
-            //            //if (currentCharacterState == CharacterState.Default)
-            //            //{
-            //            //    TransitionToState(CharacterState.Swimming);
-            //            //    waterZone = probedColliders[0];
-            //            //}
-            //        }
-            //        // otherwise; default state
-            //        else
-            //        {
-            //            //if (currentCharacterState == CharacterState.Swimming)
-            //            //{
-            //            //    //TransitionToState(CharacterState.Default);
-            //            //}
-            //        }
-            //    }
-            //}
+            //WaterOverlap();
         }
 
         public void PostGroundingUpdate(float deltaTime)
@@ -424,5 +401,29 @@ namespace ProjectTwo
         {
             Debug.Log("Left ground");
         }
+
+        private bool WaterOverlapCheck()
+        {
+            // Do a character overlap test to detect water surfaces
+            if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation,
+                probedColliders, characterSettings.waterLayer, QueryTriggerInteraction.Collide) > 0)
+            {
+                // If a water surface was detected
+                if (probedColliders[0] != null)
+                {
+                    // If the swimming reference point is inside the box, make sure we are in swimming state
+                    if (Physics.ClosestPoint(characterSettings.swimmingReferencePoint.position, probedColliders[0],
+                            probedColliders[0].transform.position, probedColliders[0].transform.rotation) ==
+                        characterSettings.swimmingReferencePoint.position)
+                    {
+                        waterZone = probedColliders[0];
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        
     }
 }
