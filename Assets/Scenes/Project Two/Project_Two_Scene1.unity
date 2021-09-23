@@ -1181,8 +1181,32 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: MyInt
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: Toggle
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: stoppedTime
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: enabledAbilities
+      value: 126
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: DefaultEnumBitmask
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: allowJumpingWhenSliding
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: interactionLayer.m_Bits
+      value: 1024
       objectReference: {fileID: 0}
     - target: {fileID: 1921050793316649540, guid: 510cd73c6534d8c4ea378f0d441dfe57,
         type: 3}

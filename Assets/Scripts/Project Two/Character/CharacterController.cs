@@ -75,7 +75,9 @@ namespace ProjectTwo
         private bool isSprintDown;
         private bool isChargeDown;
         private bool hasFinishedCharge;
+        private bool hasFinishedClimbing;
         public void FinishChargeState(bool hasFinished) => hasFinishedCharge = hasFinished;
+        public void FinishedClimbingState(bool hasFinished) => hasFinishedClimbing = hasFinished;
 
         private void Awake()
         {
@@ -121,12 +123,12 @@ namespace ProjectTwo
 
             void At(IState to, IState from, Func<bool> condition) => characterStateMachine.AddTransition(to, from, condition);
             // State Transition Checks
-            Func<bool> IsSprinting() => () => isSprintDown;
+            Func<bool> IsSprinting() => () => isSprintDown && characterSettings.AbilityEnabled("Sprint");
             Func<bool> NotSprinting() => () => !isSprintDown;
-            Func<bool> ChargePressed() => () => isChargeDown;
+            Func<bool> ChargePressed() => () => isChargeDown && characterSettings.AbilityEnabled("Charge");
             Func<bool> HasFinishedCharging() => () => hasFinishedCharge;
-            Func<bool> HasNoClipInput() => () => isNoClipInput;
-            Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
+            Func<bool> HasNoClipInput() => () => isNoClipInput && characterSettings.AbilityEnabled("NoClip");
+            Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck() && characterSettings.AbilityEnabled("Swimming");
 
             // Setting the starting state
             characterStateMachine.SetState(defaultCS);
@@ -159,7 +161,7 @@ namespace ProjectTwo
         public void JumpRequestCheck(ref PlayerCharacterInputs inputs)
         {
             // Jumping input
-            if (inputs.JumpDown)
+            if (inputs.JumpDown && characterSettings.AbilityEnabled("Jump"))
             {
                 timeSinceJumpRequested = 0f;
                 jumpRequested = true;
