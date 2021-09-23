@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections; 
 using KinematicCharacterController;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -128,8 +126,8 @@ namespace ProjectTwo
             Func<bool> ChargePressed() => () => isChargeDown && characterSettings.AbilityEnabled("Charge");
             Func<bool> HasFinishedCharging() => () => hasFinishedCharge;
             Func<bool> HasNoClipInput() => () => isNoClipInput && characterSettings.AbilityEnabled("NoClip");
-            Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck() && characterSettings.AbilityEnabled("Swimming");
-
+            Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
+            
             // Setting the starting state
             characterStateMachine.SetState(defaultCS);
         }
@@ -137,6 +135,7 @@ namespace ProjectTwo
         private IEnumerator SpawnAnimationStopInputs()
         {
             inputHandler.SetInputStatus(false);
+            // Gets the length of the current playing animation (The spawn animation)
             yield return (new WaitForSeconds(animator.GetCurrentAnimatorClipInfo(0)[0].clip.length));
             inputHandler.SetInputStatus(true);
         }
@@ -160,7 +159,7 @@ namespace ProjectTwo
 
         public void JumpRequestCheck(ref PlayerCharacterInputs inputs)
         {
-            // Jumping input
+            // Jumping input and checks if jump ability is enabled
             if (inputs.JumpDown && characterSettings.AbilityEnabled("Jump"))
             {
                 timeSinceJumpRequested = 0f;
@@ -182,9 +181,7 @@ namespace ProjectTwo
             isChargeDown = inputs.ChargingDown;
             isSprintDown = inputs.SprintDown;
             isNoClipInput = inputs.NoClipDown;
-            
-            Debug.Log(inputs.NoClipDown);
-            
+
             characterStateMachine.Tick(ref inputs);
 
             // Held down keys
@@ -273,7 +270,6 @@ namespace ProjectTwo
         public void GroundMovementHandler(ref Vector3 currentVelocity, float deltaTime, float movementSharpness, float maxMoveSpeed)
         {
             groundNormalRelativeVelocity = currentVelocity;
-                    
             Vector3 targetMovementVelocity = Vector3.zero;
 
             // Is on stable ground
@@ -338,8 +334,6 @@ namespace ProjectTwo
         public void BeforeCharacterUpdate(float deltaTime)
         {
             characterStateMachine.GetCurrentState.StateBeforeCharacterUpdate(deltaTime);
-            
-            //WaterOverlap();
         }
 
         public void PostGroundingUpdate(float deltaTime)
@@ -368,7 +362,6 @@ namespace ProjectTwo
             string collLayer = LayerMask.LayerToName(coll.gameObject.layer);
             // Checks if layer is in ignore list
             if (characterSettings.ignoredLayers.Contains(collLayer)) return false;
-
             return true;
         }
 
@@ -395,17 +388,19 @@ namespace ProjectTwo
 
         private void OnLanded()
         {
-            Debug.Log("Landed");
+            //Debug.Log("Landed");
             animator.SetTrigger("hasLanded");
         }
 
         private void OnLeaveStableGround()
         {
-            Debug.Log("Left ground");
+            //Debug.Log("Left ground");
         }
 
         private bool WaterOverlapCheck()
         {
+            if (!characterSettings.AbilityEnabled("Swimming") && !characterSettings.AllAbilitiesEnabled) return false;
+
             // Do a character overlap test to detect water surfaces
             if (characterMotor.CharacterOverlap(characterMotor.TransientPosition, characterMotor.TransientRotation,
                 probedColliders, characterSettings.waterLayer, QueryTriggerInteraction.Collide) > 0)
@@ -423,7 +418,8 @@ namespace ProjectTwo
                     }
                 }
             }
-
+            
+            // Character is not in water
             return false;
         }
         

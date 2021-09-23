@@ -1194,7 +1194,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: enabledAbilities
-      value: 126
+      value: 110
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: DefaultEnumBitmask

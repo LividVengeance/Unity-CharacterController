@@ -115,8 +115,6 @@ public class CharacterSettings : MonoBehaviour
     [Tooltip("Play Spawn in animation. Note this will disable character inputs still animation has finished")]
     public bool playSpawnAnimation = true;
 
-    public bool AbilityEnabled(string abilityName)
-    {
-  return enabledAbilities.ToString().Contains(abilityName) || enabledAbilities == AbilityBitmaskEnum.All;
-    }
+    public bool AbilityEnabled(string abilityName) => enabledAbilities.ToString().Contains(abilityName) || enabledAbilities == AbilityBitmaskEnum.All;
+    public bool AllAbilitiesEnabled => (enabledAbilities & AbilityBitmaskEnum.All) != AbilityBitmaskEnum.All;
 }
