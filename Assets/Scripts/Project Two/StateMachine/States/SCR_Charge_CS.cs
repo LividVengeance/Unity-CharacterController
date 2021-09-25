@@ -38,7 +38,8 @@ public class SCR_Charge_CS : MonoBehaviour, IState
 
     public void ExitState()
     {
-        characterController.FinishChargeState(false);
+        // Resets
+        characterController.FinishCurrentState(false);
     }
 
     public void StateRotationUpdate(ref Quaternion currentRotation, float deltaTime)
@@ -85,7 +86,7 @@ public class SCR_Charge_CS : MonoBehaviour, IState
         // Detect end of stopping phase and transition back to default movement state
         if (timeSinceStopped > characterController.characterSettings.stoppedTime)
         {
-            characterController.FinishChargeState(true);
+            characterController.FinishCurrentState(true);
         }
     }
 

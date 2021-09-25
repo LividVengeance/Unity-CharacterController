@@ -10,6 +10,7 @@ public class CharacterSettings : MonoBehaviour
     private const string chargeStr = "Charge";
     private const string swimmingStr = "Swimming";
     private const string climbingStr = "Climbing";
+    private const string powerSlideStr = "PowerSlide";
     private const string noClipStr = "NoClip";
 
     [Title("Enabled Abilities")]
@@ -23,11 +24,12 @@ public class CharacterSettings : MonoBehaviour
         Charge = 1 << 3,
         Swimming = 1 << 4,
         Climbing = 1 << 5,
-        NoClip = 1 << 6,
-        All = Jump | Sprint | Charge | Swimming | Climbing | NoClip,
+        PowerSlide = 1 << 6,
+        NoClip = 1 << 7,
+        All = Jump | Sprint | Charge | Swimming | Climbing | PowerSlide | NoClip,
     }
     
-    [Header("Stable Movement")] 
+    [Title("Stable Movement")] 
     [Tooltip("Maximum speed the character can run on stable ground")]
     public float maxStableMoveSpeed = 10f;
     [Tooltip("How quickly the character will come to a stop after no movement input")]
@@ -35,7 +37,7 @@ public class CharacterSettings : MonoBehaviour
     [Tooltip("How quickly the character will rotate")]
     public float orientationSharpness = 10;
 
-    [Header("Air Movement")] 
+    [Title("Air Movement")] 
     [Tooltip("Maximum speed the character can move when in the air")]
     public float maxAirMoveSpeed = 10f;
     [Tooltip("How quickly the character will accelerate when in the air")]
@@ -43,7 +45,7 @@ public class CharacterSettings : MonoBehaviour
     [Tooltip("The amount of drag force the character will experience when in the air")]
     public float drag = 0.1f;
     
-    [Header("Jump")]
+    [Title("Jump")]
     [ShowIf("@enabledAbilities.ToString().Contains(jumpStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("Will allow the character to jump when sliding down a sharp incline")]
     public bool allowJumpingWhenSliding = false;
@@ -60,7 +62,7 @@ public class CharacterSettings : MonoBehaviour
      Tooltip("Time after leaving stable ground where jump will still be allowed")]
     public float jumpPostGroundingGraceTime = 0f;
 
-    [Header("Sprint")]
+    [Title("Sprint")]
     [ShowIf("@enabledAbilities.ToString().Contains(sprintStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("Maximum run speed when in the sprint state")] public float maxSprintSpeed = 20f;
     [ShowIf("@enabledAbilities.ToString().Contains(sprintStr) || enabledAbilities == AbilityBitmaskEnum.All"),
@@ -72,7 +74,7 @@ public class CharacterSettings : MonoBehaviour
     [ShowIf("@enabledAbilities.ToString().Contains(sprintStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("Allow jumping while in the sprinting state")] public bool allowJumpingWhileSprinting = true;
     
-    [Header("Charging")] 
+    [Title("Charging")] 
     [ShowIf("@enabledAbilities.ToString().Contains(chargeStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("How fast the character will move in the charge state")] public float chargeSpeed = 15f;
     [ShowIf("@enabledAbilities.ToString().Contains(chargeStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
@@ -80,7 +82,7 @@ public class CharacterSettings : MonoBehaviour
     [ShowIf("@enabledAbilities.ToString().Contains(chargeStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("Time the character will remain unable to move at end of charge state")] public float stoppedTime = 1f;
 
-    [Header("Swimming")] 
+    [Title("Swimming")] 
     [ShowIf("@enabledAbilities.ToString().Contains(swimmingStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("Point used to determine if character is in water")] public Transform swimmingReferencePoint;
     [ShowIf("@enabledAbilities.ToString().Contains(swimmingStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
@@ -91,19 +93,34 @@ public class CharacterSettings : MonoBehaviour
      Tooltip("How quickly the character will come to a stop after no movement input when in the swimming state")]
     public float swimmingMovementSharpness = 3;
 
-    [Header("Ladder Climbing")] [SerializeField]
-    public float climbingSpeed = 4f;
-    public float anchoringDuration = 0.25f;
-    public LayerMask interactionLayer;
+    [Title("Ladder Climbing")]
+    [ShowIf("@enabledAbilities.ToString().Contains(climbingStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
+     Tooltip("How fast the character will climb ladders")] public float climbingSpeed = 4f;
+    [ShowIf("@enabledAbilities.ToString().Contains(climbingStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
+     Tooltip("How long the character will take to anchor to the ladder")] public float anchoringDuration = 0.25f; 
+    [ShowIf("@enabledAbilities.ToString().Contains(climbingStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
+     Tooltip("The layer that the character will interact with the ladder on")] public LayerMask interactionLayer;
 
-    [Header("No Clip")] 
+    [Title("Power Slide")] 
+    [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+    Tooltip("The boost in speed on power slide start")] public float initialSlideForce = 20f;
+    [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+     Tooltip("The max speed the character can gain in power slide")] public float maxPowerSlideSpeed = 50f;
+    [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+     Tooltip("How quickly the character will reach max power slide speed")]public float maxSlideAcceleration = 20f;
+    [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+     Tooltip("The rate the character will slow down to a stop")] public float maxSlideDecelerate = .2f;
+    [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+     Tooltip("The max amount of time character can be in power slide")] public float maxSlideTime = 2f;
+
+    [Title("No Clip")] 
     [ShowIf("@enabledAbilities.ToString().Contains(noClipStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("How fast the character will move in the no clip state")] public float noClipMoveSpeed = 10f;
     [ShowIf("@enabledAbilities.ToString().Contains(noClipStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("How quickly the character will come to a stop when in the NoClip state")] 
     public float noClipSharpness = 15;
 
-    [Header("Misc")]
+    [Title("Misc")]
     [Tooltip("Always orient its up direction in the opposite direction of the gravity")]
     public bool orientTowardsGravity;
     public Vector3 gravity = new Vector3(0, -30f, 0);
@@ -111,7 +128,7 @@ public class CharacterSettings : MonoBehaviour
     [Tooltip("Ignore physics collision on these layers")]
     public List<string> ignoredLayers = new List<string>();
 
-    [Header("Animations")] 
+    [Title("Animations")] 
     [Tooltip("Play Spawn in animation. Note this will disable character inputs still animation has finished")]
     public bool playSpawnAnimation = true;
 

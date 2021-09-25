@@ -100,7 +100,8 @@ public class SCR_Climbing_CS : MonoBehaviour, IState
        characterMotor.SetMovementCollisionsSolvingActivation(true);
        characterMotor.SetGroundSolvingActivation(true);
 
-       characterController.FinishedClimbingState(false);
+       // Reset
+       characterController.FinishCurrentState(false);
     }
 
     public void StateVelocityUpdate(ref Vector3 currentVelocity, float deltaTime)
@@ -189,7 +190,7 @@ public class SCR_Climbing_CS : MonoBehaviour, IState
                     }
                     else if (climbingState == ClimbingState.DeAnchoring)
                     {
-                        characterController.FinishedClimbingState(true);
+                        characterController.FinishCurrentState(true);
                         //TransitionToState(CharacterState.Default);
                     }
                 }

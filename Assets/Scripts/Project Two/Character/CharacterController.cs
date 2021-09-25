@@ -71,11 +71,10 @@ namespace ProjectTwo
 
         private bool isNoClipInput;
         private bool isSprintDown;
+        private bool isCrouchDown;
         private bool isChargeDown;
-        private bool hasFinishedCharge;
-        private bool hasFinishedClimbing;
-        public void FinishChargeState(bool hasFinished) => hasFinishedCharge = hasFinished;
-        public void FinishedClimbingState(bool hasFinished) => hasFinishedClimbing = hasFinished;
+        private bool hasFinishedCurrentState;
+        public void FinishCurrentState(bool hasFinished) => hasFinishedCurrentState = hasFinished;
 
         private void Awake()
         {
@@ -101,6 +100,7 @@ namespace ProjectTwo
             SCR_Sprint_CS sprintCS = new SCR_Sprint_CS(characterMotor, this);
             SCR_Charge_CS chargeCS = new SCR_Charge_CS(characterMotor, this);
             SCR_Swimming_CS swimmingCS = new SCR_Swimming_CS(characterMotor, this);
+            SCR_PowerSlide_CS powerSlideCS = new SCR_PowerSlide_CS(characterMotor, this);
             SCR_NoClip_CS noClipCS = new SCR_NoClip_CS(characterMotor, this);
 
             // Sprint State Transitions
@@ -109,7 +109,7 @@ namespace ProjectTwo
             
             // Charge State Transitions
             At(defaultCS, chargeCS, ChargePressed());
-            At(chargeCS, defaultCS, HasFinishedCharging());
+            At(chargeCS, defaultCS, HasFinishedCurrentState());
             
             // No Clip State Transitions
             At(noClipCS, defaultCS, HasNoClipInput());
@@ -119,15 +119,22 @@ namespace ProjectTwo
             characterStateMachine.AddAnyTransition(swimmingCS, WaterOverlapCheck);
             At(swimmingCS, defaultCS, NoWaterOverlap());
 
+            // Power Slide State Transitions
+            At(sprintCS, powerSlideCS, CanPowerSlide());
+            At(powerSlideCS, defaultCS, SlideHeld());
+            At(powerSlideCS, defaultCS, HasFinishedCurrentState());
+
             void At(IState to, IState from, Func<bool> condition) => characterStateMachine.AddTransition(to, from, condition);
             // State Transition Checks
             Func<bool> IsSprinting() => () => isSprintDown && characterSettings.AbilityEnabled("Sprint");
             Func<bool> NotSprinting() => () => !isSprintDown;
             Func<bool> ChargePressed() => () => isChargeDown && characterSettings.AbilityEnabled("Charge");
-            Func<bool> HasFinishedCharging() => () => hasFinishedCharge;
+            Func<bool> HasFinishedCurrentState() => () => hasFinishedCurrentState;
             Func<bool> HasNoClipInput() => () => isNoClipInput && characterSettings.AbilityEnabled("NoClip");
             Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
-            
+            Func<bool> CanPowerSlide() => () => isCrouchDown && characterSettings.AbilityEnabled("PowerSlide");
+            Func<bool> SlideHeld() => () => !crouchInputIsHeld; 
+
             // Setting the starting state
             characterStateMachine.SetState(defaultCS);
         }
@@ -180,6 +187,7 @@ namespace ProjectTwo
             // Input Vars (For state machine)
             isChargeDown = inputs.ChargingDown;
             isSprintDown = inputs.SprintDown;
+            isCrouchDown = inputs.CrouchDown; 
             isNoClipInput = inputs.NoClipDown;
 
             characterStateMachine.Tick(ref inputs);
