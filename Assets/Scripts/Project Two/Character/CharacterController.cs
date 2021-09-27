@@ -21,6 +21,7 @@ namespace ProjectTwo
         public bool NoClipDown;
         public bool InteractDown;
         public bool SprintDown;
+        public bool DodgeDown;
     }
 
     public class CharacterController : MonoBehaviour, ICharacterController
@@ -73,6 +74,7 @@ namespace ProjectTwo
         private bool isSprintDown;
         private bool isCrouchDown;
         private bool isChargeDown;
+        private bool isDodgeDown;
         private bool hasFinishedCurrentState;
         public void FinishCurrentState(bool hasFinished) => hasFinishedCurrentState = hasFinished;
 
@@ -101,6 +103,7 @@ namespace ProjectTwo
             SCR_Charge_CS chargeCS = new SCR_Charge_CS(characterMotor, this);
             SCR_Swimming_CS swimmingCS = new SCR_Swimming_CS(characterMotor, this);
             SCR_PowerSlide_CS powerSlideCS = new SCR_PowerSlide_CS(characterMotor, this);
+            SCR_Dodge_CS dodgeCS = new SCR_Dodge_CS(characterMotor, this);
             SCR_NoClip_CS noClipCS = new SCR_NoClip_CS(characterMotor, this);
 
             // Sprint State Transitions
@@ -123,6 +126,10 @@ namespace ProjectTwo
             At(sprintCS, powerSlideCS, CanPowerSlide());
             At(powerSlideCS, defaultCS, SlideHeld());
             At(powerSlideCS, defaultCS, HasFinishedCurrentState());
+            
+            // Dodge State Transitions
+            At(defaultCS, dodgeCS, CanDodge());
+            At(dodgeCS, defaultCS, HasFinishedCurrentState());
 
             void At(IState to, IState from, Func<bool> condition) => characterStateMachine.AddTransition(to, from, condition);
             // State Transition Checks
@@ -133,6 +140,7 @@ namespace ProjectTwo
             Func<bool> HasNoClipInput() => () => isNoClipInput && characterSettings.AbilityEnabled("NoClip");
             Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
             Func<bool> CanPowerSlide() => () => isCrouchDown && characterSettings.AbilityEnabled("PowerSlide");
+            Func<bool> CanDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge");
             Func<bool> SlideHeld() => () => !crouchInputIsHeld; 
 
             // Setting the starting state
@@ -189,6 +197,7 @@ namespace ProjectTwo
             isSprintDown = inputs.SprintDown;
             isCrouchDown = inputs.CrouchDown; 
             isNoClipInput = inputs.NoClipDown;
+            isDodgeDown = inputs.DodgeDown; 
 
             characterStateMachine.Tick(ref inputs);
 
