@@ -11,7 +11,7 @@ public enum ClimbingState
     DeAnchoring
 }
 
-public class SCR_Climbing_CS : MonoBehaviour, IState
+public class SCR_Climbing_CS : IState
 {
     private KinematicCharacterMotor characterMotor;
     private ProjectTwo.CharacterController characterController;

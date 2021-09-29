@@ -2,7 +2,6 @@ using System;
 using System.Collections; 
 using KinematicCharacterController;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace ProjectTwo
 {
@@ -77,6 +76,7 @@ namespace ProjectTwo
         private bool isDodgeDown;
         private bool hasFinishedCurrentState;
         public void FinishCurrentState(bool hasFinished) => hasFinishedCurrentState = hasFinished;
+        public IState GetPreviousState => characterStateMachine.GetPreviousState;
 
         private void Awake()
         {
@@ -96,7 +96,7 @@ namespace ProjectTwo
         private void InitializeStateMachine()
         {
             characterStateMachine = new CharacterStateMachine();
-            
+
             // State Setup
             SCR_Default_CS defaultCS = new SCR_Default_CS(characterMotor, this);
             SCR_Sprint_CS sprintCS = new SCR_Sprint_CS(characterMotor, this);
@@ -130,6 +130,7 @@ namespace ProjectTwo
             // Dodge State Transitions
             At(defaultCS, dodgeCS, CanDodge());
             At(dodgeCS, defaultCS, HasFinishedCurrentState());
+            At(sprintCS, dodgeCS, CanSprintDodge());
 
             void At(IState to, IState from, Func<bool> condition) => characterStateMachine.AddTransition(to, from, condition);
             // State Transition Checks
@@ -143,6 +144,7 @@ namespace ProjectTwo
             Func<bool> CanDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge")
                 && ((characterSettings.dodgeInAir) || (!characterSettings.dodgeInAir 
                 && characterMotor.GroundingStatus.IsStableOnGround));
+            Func<bool> CanSprintDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge") && characterSettings.dodgeInSprint;
             Func<bool> SlideHeld() => () => !crouchInputIsHeld; 
 
             // Setting the starting state

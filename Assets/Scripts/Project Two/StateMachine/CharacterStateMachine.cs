@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterStateMachine : MonoBehaviour
+public class CharacterStateMachine
 {
     private IState currentState;
     
@@ -12,6 +12,8 @@ public class CharacterStateMachine : MonoBehaviour
     private List<Transition> anyTransitions = new List<Transition>();
 
     private static List<Transition> EmptyTransitions = new List<Transition>(0);
+
+    private IState previousState;
     
     public void Tick(ref ProjectTwo.PlayerCharacterInputs inputs)
     {
@@ -31,6 +33,7 @@ public class CharacterStateMachine : MonoBehaviour
         if (newState == currentState) return;
 
         currentState?.ExitState();
+        previousState = currentState;
         currentState = newState;
 
         _transitions.TryGetValue(currentState.GetType(), out currentTransitions);
@@ -86,4 +89,5 @@ public class CharacterStateMachine : MonoBehaviour
     }
 
     public IState GetCurrentState => currentState;
+    public IState GetPreviousState => previousState;
 }

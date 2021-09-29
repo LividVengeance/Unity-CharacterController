@@ -1,7 +1,7 @@
 using KinematicCharacterController;
 using UnityEngine;
 
-public class SCR_Sprint_CS : MonoBehaviour, IState
+public class SCR_Sprint_CS : IState
 {
     private KinematicCharacterMotor characterMotor;
     private ProjectTwo.CharacterController characterController;

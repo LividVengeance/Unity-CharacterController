@@ -2,7 +2,7 @@ using KinematicCharacterController;
 using ProjectTwo;
 using UnityEngine;
 
-public class SCR_NoClip_CS : MonoBehaviour, IState
+public class SCR_NoClip_CS : IState
 {
     private KinematicCharacterMotor characterMotor;
     private ProjectTwo.CharacterController characterController;

@@ -4,7 +4,7 @@ using KinematicCharacterController;
 using ProjectTwo;
 using UnityEngine;
 
-public class SCR_PowerSlide_CS : MonoBehaviour, IState
+public class SCR_PowerSlide_CS : IState
 {
     //TODO: Have character increase velocity till max velocity based on the initial velocity
     //(upon enter of the power slide state) 
