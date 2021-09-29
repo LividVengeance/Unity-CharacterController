@@ -12,9 +12,9 @@ public class SCR_Dodge_CS : MonoBehaviour, IState
     // Animation Hash
     private const string dodgeTriggerHash = "dodgeTrigger";
 
-    private bool hasDodged;
-
-    private float test;
+    private bool hasNotDodged;
+    private bool notHasDir;
+    private Vector3 dodgeDirection;
     
     public SCR_Dodge_CS(KinematicCharacterMotor _characterMotor, ProjectTwo.CharacterController _characterController)
     {
@@ -24,19 +24,25 @@ public class SCR_Dodge_CS : MonoBehaviour, IState
     
     public void EnterState()
     {
-        characterController.animator.SetTrigger(dodgeTriggerHash);
-        hasDodged = true;
-        Debug.Log("Entered Dodge State");
+        hasNotDodged = true;
+        notHasDir = true;
+        dodgeDirection = Vector3.zero;
     }
 
     public void Tick(ref PlayerCharacterInputs inputs)
     {
-        if (hasDodged)
+        if (notHasDir)
         {
-            Debug.Log("FWD: " + inputs.MoveAxisForward + "        |RIGHT: " + inputs.MoveAxisRight);
-            if (inputs.MoveAxisForward > 1 || inputs.MoveAxisForward < 1) test = inputs.MoveAxisForward;
-            else if (inputs.MoveAxisRight > 1 || inputs.MoveAxisRight < 1) test = inputs.MoveAxisRight;
-            characterController.FinishCurrentState(true);
+            // Forward
+            if (inputs.MoveAxisForward > 0 && characterController.characterSettings.DodgeDirectionCheck("Forward")) dodgeDirection = characterMotor.CharacterForward;
+            // Back
+            else if (inputs.MoveAxisForward < 0 && characterController.characterSettings.DodgeDirectionCheck("Back")) dodgeDirection = -characterMotor.CharacterForward;
+            // Right
+            else if (inputs.MoveAxisRight > 0 && characterController.characterSettings.DodgeDirectionCheck("Right")) dodgeDirection = characterMotor.CharacterRight;
+            // Left
+            else if (inputs.MoveAxisRight < 0 && characterController.characterSettings.DodgeDirectionCheck("Left")) dodgeDirection = -characterMotor.CharacterRight;
+
+            notHasDir = false;
         }
     }
 
@@ -46,10 +52,13 @@ public class SCR_Dodge_CS : MonoBehaviour, IState
 
     public void StateVelocityUpdate(ref Vector3 currentVelocity, float deltaTime)
     {
-        if (hasDodged)
+        if (hasNotDodged && !notHasDir && dodgeDirection != Vector3.zero)
         {
-            currentVelocity += currentVelocity * (test * 20f);
-            hasDodged = false;
+            characterController.animator.SetTrigger(dodgeTriggerHash);
+            
+            currentVelocity += dodgeDirection * characterController.characterSettings.dodgeForce;
+            hasNotDodged = false;
+            characterController.FinishCurrentState(true);
         }
     }
 

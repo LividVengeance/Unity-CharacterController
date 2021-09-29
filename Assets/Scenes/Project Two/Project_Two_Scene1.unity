@@ -1383,12 +1383,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: dodgeForce
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: stoppedTime
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: dodgeDirection
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: enabledAbilities
-      value: 254
+      value: 510
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: DefaultEnumBitmask

@@ -14,7 +14,7 @@ public class SCR_Sprint_CS : MonoBehaviour, IState
 
     public void EnterState()
     {
-        characterMotor.SetGroundSolvingActivation(true); 
+        characterMotor.SetGroundSolvingActivation(true);
     }
 
     public void Tick(ref ProjectTwo.PlayerCharacterInputs inputs)

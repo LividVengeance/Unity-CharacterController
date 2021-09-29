@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -11,12 +12,13 @@ public class CharacterSettings : MonoBehaviour
     private const string swimmingStr = "Swimming";
     private const string climbingStr = "Climbing";
     private const string powerSlideStr = "PowerSlide";
+    private const string dodgeStr = "Dodge";
     private const string noClipStr = "NoClip";
 
     [Title("Enabled Abilities")]
     public AbilityBitmaskEnum enabledAbilities;
 
-    [System.Flags]
+    [Flags]
     public enum AbilityBitmaskEnum
     {
         Jump = 1 << 1,
@@ -25,8 +27,9 @@ public class CharacterSettings : MonoBehaviour
         Swimming = 1 << 4,
         Climbing = 1 << 5,
         PowerSlide = 1 << 6,
-        NoClip = 1 << 7,
-        All = Jump | Sprint | Charge | Swimming | Climbing | PowerSlide | NoClip,
+        Dodge = 1 << 7,
+        NoClip = 1 << 8,
+        All = Jump | Sprint | Charge | Swimming | Climbing | PowerSlide | Dodge | NoClip,
     }
     
     [Title("Stable Movement")] 
@@ -113,6 +116,67 @@ public class CharacterSettings : MonoBehaviour
     [ShowIf("@enabledAbilities.ToString().Contains(powerSlideStr) || enabledAbilities == AbilityBitmaskEnum.All"),
      Tooltip("The max amount of time character can be in power slide")] public float maxSlideTime = 2f;
 
+    [Title("Dodge")]
+    [System.Flags]
+    public enum DodgeDirection
+    {
+     Forward = 1 << 1,
+     Back = 1 << 2,
+     Left = 1 << 3,
+     Right = 1 << 4,
+     All = Forward | Back | Left | Right,
+    }
+    [ShowIf("@enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+    Tooltip("The directions the character can dodge when in the default state")]
+    public DodgeDirection dodgeDirection;
+    [ShowIf("@enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+    Tooltip("The force the character will dodge with in the default state")]
+    public float dodgeForce;
+    [ShowIf("@enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+    Tooltip("The time before the character can dodge again")]
+    public float dodgeCooldownTime;
+    [ShowIf("@enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All"),
+    Tooltip("Allows the character to dodge when in the air")]
+    public bool dodgeInAir;
+    [Flags]
+    public enum AirDodgeDirection
+    {
+     Forward = 1 << 1,
+     Back = 1 << 2,
+     Left = 1 << 3,
+     Right = 1 << 4,
+     All = Forward | Back | Left | Right,
+    }
+    [ShowIf("@(enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All) &&" +
+            "dodgeInAir"), Tooltip("The directions the character can dodge when in the air")]
+    public AirDodgeDirection airDodgeDirection;
+    [ShowIf("@(enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All) &&" +
+            "dodgeInAir"), Tooltip("The force the character will dodge with when in the air")]
+    public float dodgeAirForce;
+    [ShowIf("@(enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All) && " +
+            "(enabledAbilities.ToString().Contains(sprintStr) || enabledAbilities == AbilityBitmaskEnum.All)"),
+     Tooltip("Allows the character to dodge when in the sprint state")]
+    public bool dodgeInSprint;
+    [Flags]
+    public enum SprintDodgeDirection
+    {
+     Forward = 1 << 1,
+     Back = 1 << 2,
+     Left = 1 << 3,
+     Right = 1 << 4,
+     All = Forward | Back | Left | Right,
+    }
+    [ShowIf("@(enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All) &&" +
+            "dodgeInSprint && (enabledAbilities.ToString().Contains(sprintStr) || " +
+            "enabledAbilities == AbilityBitmaskEnum.All)"),
+     Tooltip("The directions the character can dodge when in the sprint state")]
+    public SprintDodgeDirection sprintDodgeDirection;
+    [ShowIf("@(enabledAbilities.ToString().Contains(dodgeStr) || enabledAbilities == AbilityBitmaskEnum.All) &&" +
+            "dodgeInSprint && (enabledAbilities.ToString().Contains(sprintStr) || " +
+            "enabledAbilities == AbilityBitmaskEnum.All)"), 
+     Tooltip("The force the character will dodge with when in the sprint state")]
+    public float dodgeSprintForce;
+
     [Title("No Clip")] 
     [ShowIf("@enabledAbilities.ToString().Contains(noClipStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("How fast the character will move in the no clip state")] public float noClipMoveSpeed = 10f;
@@ -134,4 +198,7 @@ public class CharacterSettings : MonoBehaviour
 
     public bool AbilityEnabled(string abilityName) => enabledAbilities.ToString().Contains(abilityName) || enabledAbilities == AbilityBitmaskEnum.All;
     public bool AllAbilitiesEnabled => (enabledAbilities & AbilityBitmaskEnum.All) != AbilityBitmaskEnum.All;
+
+    public bool DodgeDirectionCheck(string direction) =>
+     dodgeDirection.ToString().Contains(direction) || dodgeDirection == DodgeDirection.All;
 }

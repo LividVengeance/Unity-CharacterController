@@ -65,6 +65,8 @@ namespace ProjectTwo
                 characterInputs.InteractDown = Input.GetKeyDown(KeyCode.E);
                 // Sprint
                 characterInputs.SprintDown = Input.GetKey(KeyCode.LeftShift);
+                // Dodge
+                characterInputs.DodgeDown = Input.GetKeyDown(KeyCode.F);
 
                 // Apply inputs to character
                 character.SetInputs(ref characterInputs);
