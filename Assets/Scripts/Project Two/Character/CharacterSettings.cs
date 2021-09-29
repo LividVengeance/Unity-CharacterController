@@ -201,4 +201,7 @@ public class CharacterSettings : MonoBehaviour
 
     public bool DodgeDirectionCheck(string direction) =>
      dodgeDirection.ToString().Contains(direction) || dodgeDirection == DodgeDirection.All;
+    
+    public bool AirDodgeDirectionCheck(string direction) =>
+     airDodgeDirection.ToString().Contains(direction) || airDodgeDirection == AirDodgeDirection.All;
 }

@@ -1384,11 +1384,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: dodgeForce
-      value: 120
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: dodgeInAir
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: stoppedTime
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: dodgeAirForce
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: dodgeDirection
@@ -1396,7 +1404,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: enabledAbilities
-      value: 510
+      value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
+      propertyPath: airDodgeDirection
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 854821107, guid: 510cd73c6534d8c4ea378f0d441dfe57, type: 3}
       propertyPath: DefaultEnumBitmask

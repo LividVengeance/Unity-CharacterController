@@ -140,7 +140,9 @@ namespace ProjectTwo
             Func<bool> HasNoClipInput() => () => isNoClipInput && characterSettings.AbilityEnabled("NoClip");
             Func<bool> NoWaterOverlap() => () => !WaterOverlapCheck();
             Func<bool> CanPowerSlide() => () => isCrouchDown && characterSettings.AbilityEnabled("PowerSlide");
-            Func<bool> CanDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge");
+            Func<bool> CanDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge")
+                && ((characterSettings.dodgeInAir) || (!characterSettings.dodgeInAir 
+                && characterMotor.GroundingStatus.IsStableOnGround));
             Func<bool> SlideHeld() => () => !crouchInputIsHeld; 
 
             // Setting the starting state

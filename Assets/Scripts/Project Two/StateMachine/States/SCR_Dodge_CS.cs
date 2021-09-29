@@ -34,14 +34,35 @@ public class SCR_Dodge_CS : MonoBehaviour, IState
         if (notHasDir)
         {
             // Forward
-            if (inputs.MoveAxisForward > 0 && characterController.characterSettings.DodgeDirectionCheck("Forward")) dodgeDirection = characterMotor.CharacterForward;
+            if (inputs.MoveAxisForward > 0 && characterController.characterSettings.DodgeDirectionCheck("Forward") && 
+                ((!characterController.characterSettings.dodgeInAir || characterController.characterSettings.dodgeInAir && characterMotor.GroundingStatus.IsStableOnGround) || (characterController.characterSettings.dodgeInAir 
+                && characterController.characterSettings.AirDodgeDirectionCheck("Forward"))))
+            {
+                dodgeDirection = characterMotor.CharacterForward;
+            }
             // Back
-            else if (inputs.MoveAxisForward < 0 && characterController.characterSettings.DodgeDirectionCheck("Back")) dodgeDirection = -characterMotor.CharacterForward;
+            else if (inputs.MoveAxisForward < 0 && characterController.characterSettings.DodgeDirectionCheck("Back") && 
+                ((!characterController.characterSettings.dodgeInAir|| characterController.characterSettings.dodgeInAir && characterMotor.GroundingStatus.IsStableOnGround) || (characterController.characterSettings.dodgeInAir 
+                && characterController.characterSettings.AirDodgeDirectionCheck("Back"))))
+            {
+                dodgeDirection = -characterMotor.CharacterForward;
+            }
             // Right
-            else if (inputs.MoveAxisRight > 0 && characterController.characterSettings.DodgeDirectionCheck("Right")) dodgeDirection = characterMotor.CharacterRight;
+            else if (inputs.MoveAxisRight > 0 && characterController.characterSettings.DodgeDirectionCheck("Right") && 
+                ((!characterController.characterSettings.dodgeInAir|| characterController.characterSettings.dodgeInAir && characterMotor.GroundingStatus.IsStableOnGround) || (characterController.characterSettings.dodgeInAir 
+                && characterController.characterSettings.AirDodgeDirectionCheck("Right"))))
+            {
+                dodgeDirection = characterMotor.CharacterRight;
+            }
             // Left
-            else if (inputs.MoveAxisRight < 0 && characterController.characterSettings.DodgeDirectionCheck("Left")) dodgeDirection = -characterMotor.CharacterRight;
+            else if (inputs.MoveAxisRight < 0 && characterController.characterSettings.DodgeDirectionCheck("Left") && 
+                ((!characterController.characterSettings.dodgeInAir|| characterController.characterSettings.dodgeInAir && characterMotor.GroundingStatus.IsStableOnGround) || (characterController.characterSettings.dodgeInAir 
+                && characterController.characterSettings.AirDodgeDirectionCheck("Left"))))
+            {
+                dodgeDirection = -characterMotor.CharacterRight;
+            }
 
+            Debug.Log(dodgeDirection);
             notHasDir = false;
         }
     }
@@ -56,10 +77,15 @@ public class SCR_Dodge_CS : MonoBehaviour, IState
         {
             characterController.animator.SetTrigger(dodgeTriggerHash);
             
-            currentVelocity += dodgeDirection * characterController.characterSettings.dodgeForce;
+            // Gets the force depending if the character is in the air or not
+            float dodgeForce = (characterController.characterSettings.dodgeInAir && !characterMotor.GroundingStatus.FoundAnyGround) 
+                ? characterController.characterSettings.dodgeAirForce : characterController.characterSettings.dodgeForce;
+            
+            currentVelocity += dodgeDirection * dodgeForce;
             hasNotDodged = false;
             characterController.FinishCurrentState(true);
         }
+        else if (dodgeDirection == Vector3.zero) characterController.FinishCurrentState(true);
     }
 
     public void StateRotationUpdate(ref Quaternion currentRotation, float deltaTime)
