@@ -14,4 +14,6 @@ public interface IState
 
     public void StateOnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint,
         ref HitStabilityReport hitStabilityReport);
+
+    public void SetInteractObject(GameObject interactGameObject = null);
 }

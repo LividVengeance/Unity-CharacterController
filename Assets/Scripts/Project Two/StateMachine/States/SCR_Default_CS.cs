@@ -150,4 +150,8 @@ public class SCR_Default_CS : IState
             characterController.wallJumpNormal = hitNormal;
         }
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

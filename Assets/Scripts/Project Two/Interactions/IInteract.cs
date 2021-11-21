@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IInteract
 {
-    public void OnInteract(ProjectTwo.CharacterController characterController);
+    public void OnInteract(ProjectTwo.CharacterController characterController, GameObject interactObject);
 }

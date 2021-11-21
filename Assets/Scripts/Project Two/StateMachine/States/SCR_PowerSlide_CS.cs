@@ -101,4 +101,8 @@ public class SCR_PowerSlide_CS : IState
         ref HitStabilityReport hitStabilityReport)
     {
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

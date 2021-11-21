@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Drawing;
 using KinematicCharacterController;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace ProjectTwo
 {
@@ -70,6 +72,10 @@ namespace ProjectTwo
         // Swimming vars
         public Collider waterZone;
         
+        // TEST 
+        public bool interactionState;
+        private PushCube pushPullBoxState;
+        
         // Move to point
         private Vector3 moveToPointVec;
         private bool isMovingToPoint;
@@ -117,6 +123,11 @@ namespace ProjectTwo
             SCR_Dodge_CS dodgeCS = new SCR_Dodge_CS(characterMotor, this);
             SCR_NoClip_CS noClipCS = new SCR_NoClip_CS(characterMotor, this);
 
+            // Intractable State Setup
+            pushPullBoxState = new PushCube(characterMotor, this);
+            At(defaultCS, pushPullBoxState, InteractionState());
+            At(pushPullBoxState, defaultCS, ExitInteractionState());
+
             // Sprint State Transitions
             At(defaultCS, sprintCS, IsSprinting());
             At(sprintCS, defaultCS, NotSprinting());
@@ -157,6 +168,8 @@ namespace ProjectTwo
                 && characterMotor.GroundingStatus.IsStableOnGround));
             Func<bool> CanSprintDodge() => () => isDodgeDown && characterSettings.AbilityEnabled("Dodge") && characterSettings.dodgeInSprint;
             Func<bool> SlideHeld() => () => !crouchInputIsHeld; 
+            Func<bool> InteractionState() => () => interactionState;
+            Func<bool> ExitInteractionState() => () => isInteractDown && interactionState;
 
             // Setting the starting state
             characterStateMachine.SetState(defaultCS);
@@ -497,7 +510,27 @@ namespace ProjectTwo
                     if (colliderHit.gameObject.GetComponent<IInteract>() != null)
                     {
                         colliderHit.gameObject.GetComponent<IInteract>().OnInteract(
-                            GetComponent<CharacterController>());
+                            GetComponent<CharacterController>(), colliderHit.gameObject);
+                        
+                        // The interacted object has its own state (Must have set up in stateMachine)
+                        if (colliderHit.gameObject.GetComponent<MechanicType>().mechanicType != null)
+                        {
+                            interactionState = true;
+                            
+                            // Passes the interact object to the correct interact state
+                            switch (colliderHit.gameObject.GetComponent<MechanicType>().mechanicType)
+                            {
+                                case MechanicType.EMechanicType.PushPull:
+                                {
+                                    pushPullBoxState.SetInteractObject(colliderHit.gameObject);
+                                    break;
+                                }
+                                default:
+                                    throw new Exception("Interact object has defined MechanicType");
+                                    break;
+                            }
+                        }
+                        
                         objectsInteractedCount++;
                     }
                 }

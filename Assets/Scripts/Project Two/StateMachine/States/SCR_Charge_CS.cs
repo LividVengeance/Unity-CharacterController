@@ -101,4 +101,8 @@ public class SCR_Charge_CS : IState
             isStopped = true;
         }
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

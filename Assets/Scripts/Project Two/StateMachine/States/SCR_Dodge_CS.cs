@@ -106,4 +106,8 @@ public class SCR_Dodge_CS : IState
         ref HitStabilityReport hitStabilityReport)
     {
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

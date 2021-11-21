@@ -80,6 +80,10 @@ public class SCR_Swimming_CS : IState
     {
     }
 
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
+
     public void StateVelocityUpdate(ref Vector3 currentVelocity, float deltaTime)
     {
         float verticalInput = 0f + (characterController.jumpInputIsHeld ? 1f : 0f) + (characterController.crouchInputIsHeld ? -1f : 0f);

@@ -95,4 +95,8 @@ public class SCR_NoClip_CS : IState
         ref HitStabilityReport hitStabilityReport)
     {
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

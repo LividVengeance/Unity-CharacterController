@@ -206,4 +206,8 @@ public class SCR_Climbing_CS : IState
     {
         
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }

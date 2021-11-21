@@ -98,4 +98,8 @@ public class SCR_Sprint_CS : IState
         ref HitStabilityReport hitStabilityReport)
     {
     }
+
+    public void SetInteractObject(GameObject interactGameObject = null)
+    {
+    }
 }
