@@ -11,14 +11,13 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Sprint_CS.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Default_CS.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_NoClip_CS.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../GameEnginPlugin/GameEnginesPlugin/Assets/Scripts/FSM/States/AttackState.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../GameEnginPlugin/GameEnginesPlugin/Assets/Scripts/FSM/FiniteStateMachine.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Swimming_CS.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Dodge_CS.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Swimming_CS.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3c9e850c90c548a0af7e388089bbdae93ea98/a4/d023ad71/Enumerable.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../../GameEnginPlugin/GameEnginesPlugin/Assets/Scripts/FSM/EnemyBehaviour.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/Interactions/PushCube.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Climbing_CS.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/StateMachine/States/SCR_Charge_CS.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Project Two/Interactions/IInteract.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <changedPaths>

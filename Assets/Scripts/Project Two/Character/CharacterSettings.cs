@@ -177,6 +177,11 @@ public class CharacterSettings : MonoBehaviour
      Tooltip("The force the character will dodge with when in the sprint state")]
     public float dodgeSprintForce;
 
+    [Title("Interaction")] 
+    public Collider[] interactColliders;
+    public float interactRange;
+    public int objectsPerInteraction;
+    
     [Title("No Clip")] 
     [ShowIf("@enabledAbilities.ToString().Contains(noClipStr) || enabledAbilities == AbilityBitmaskEnum.All"), 
      Tooltip("How fast the character will move in the no clip state")] public float noClipMoveSpeed = 10f;

@@ -1,5 +1,6 @@
 using System;
-using System.Collections; 
+using System.Collections;
+using System.Drawing;
 using KinematicCharacterController;
 using UnityEngine;
 
@@ -68,12 +69,22 @@ namespace ProjectTwo
         public Collider[] probedColliders = new Collider[8];
         // Swimming vars
         public Collider waterZone;
+        
+        // Move to point
+        private Vector3 moveToPointVec;
+        private bool isMovingToPoint;
+        private bool enableInputAtPoint;
+        private float moveToPointSpeed;
+        private float maxMoveToPointTime;
+        private float currentMoveToPointTime;
+        private float minDistToPoint;
 
         private bool isNoClipInput;
         private bool isSprintDown;
         private bool isCrouchDown;
         private bool isChargeDown;
         private bool isDodgeDown;
+        private bool isInteractDown;
         private bool hasFinishedCurrentState;
         public void FinishCurrentState(bool hasFinished) => hasFinishedCurrentState = hasFinished;
         public IState GetPreviousState => characterStateMachine.GetPreviousState;
@@ -201,9 +212,14 @@ namespace ProjectTwo
             isSprintDown = inputs.SprintDown;
             isCrouchDown = inputs.CrouchDown; 
             isNoClipInput = inputs.NoClipDown;
-            isDodgeDown = inputs.DodgeDown; 
+            isDodgeDown = inputs.DodgeDown;
+            isInteractDown = inputs.InteractDown; 
+            
+            //TODO: Make something more permanent
+            if (inputs.InteractDown) Interact();
 
             characterStateMachine.Tick(ref inputs);
+
 
             // Held down keys
             jumpInputIsHeld = inputs.JumpHeld;
@@ -288,6 +304,24 @@ namespace ProjectTwo
             }
         }
 
+        /// Updates the characters velocity to move towards point
+        private void MoveToPointUpdate(ref Vector3 currentVelocity, float deltaTime, float movementSharpness,
+            float maxMoveSpeed)
+        {
+            currentVelocity = Vector3.Lerp(currentVelocity, (moveToPointVec - transform.position) * maxMoveSpeed,
+                1 - Mathf.Exp(-movementSharpness * deltaTime));
+
+            currentMoveToPointTime += deltaTime;
+            
+            // Break out of the move to point
+            if (currentMoveToPointTime >= maxMoveToPointTime ||
+                Vector3.Distance(transform.position, moveToPointVec) <= minDistToPoint)
+            {
+                isMovingToPoint = false;
+                if (enableInputAtPoint) inputHandler.SetInputStatus(true);
+            }
+        }
+
         public void GroundMovementHandler(ref Vector3 currentVelocity, float deltaTime, float movementSharpness, float maxMoveSpeed)
         {
             groundNormalRelativeVelocity = currentVelocity;
@@ -297,6 +331,13 @@ namespace ProjectTwo
             if (characterMotor.GroundingStatus.IsStableOnGround)
             {
                 animator.SetBool("isGrounded", true);
+
+                // Handles the character being forced to point
+                if (isMovingToPoint)
+                {
+                    MoveToPointUpdate(ref currentVelocity, deltaTime, movementSharpness, moveToPointSpeed);
+                    return;
+                }
                 
                 // Reorient source velocity on current ground slope
                 // (this is because we don't want our smoothing to cause any velocity losses in slope changes)
@@ -443,6 +484,39 @@ namespace ProjectTwo
             // Character is not in water
             return false;
         }
+
+        private void Interact()
+        {
+            int objectsInteractedCount = 1;
+            characterSettings.interactColliders = Physics.OverlapSphere(transform.position, characterSettings.interactRange);
+
+            foreach (Collider colliderHit in characterSettings.interactColliders)
+            {
+                if (objectsInteractedCount <= characterSettings.objectsPerInteraction)
+                {
+                    if (colliderHit.gameObject.GetComponent<IInteract>() != null)
+                    {
+                        colliderHit.gameObject.GetComponent<IInteract>().OnInteract(
+                            GetComponent<CharacterController>());
+                        objectsInteractedCount++;
+                    }
+                }
+            }
+        }
         
+        /// Used to pull the character to a point
+        public void SetMoveToPoint(Vector3 point, float speed, float maxMoveTime, float minDist, bool 
+            disableInput = true, bool enableInputsPoint = true)
+        {
+            isMovingToPoint = true;
+            
+            if (disableInput) inputHandler.SetInputStatus(false);
+            enableInputAtPoint = enableInputsPoint;
+            
+            moveToPointVec = point;
+            moveToPointSpeed = speed;
+            maxMoveToPointTime = maxMoveTime;
+            minDistToPoint = minDist;
+        }
     }
 }
